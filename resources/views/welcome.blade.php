@@ -587,7 +587,7 @@
                 <div class="flex items-center gap-4">
                     <!-- User Profile / Login -->
                     @auth
-                        <a href="{{ route('customer.profile') }}" class="flex flex-col items-center group">
+                        <a href="{{ route('customer.dashboard') }}" class="flex flex-col items-center group">
                             <div class="bg-white border-2 border-primary/20 shadow-sm rounded-full p-0.5 group-hover:border-primary transition-all overflow-hidden w-10 h-10 flex items-center justify-center">
                                 @if(Auth::user()->avatar)
                                     <img src="{{ Auth::user()->avatar }}" class="w-full h-full object-cover rounded-full" alt="Profile">
@@ -595,7 +595,7 @@
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=00A859&color=fff&bold=true" class="w-full h-full object-cover rounded-full" alt="Profile">
                                 @endif
                             </div>
-                            <span class="text-[9px] font-black text-primary uppercase mt-1 tracking-tighter">Mi Perfil</span>
+                            <span class="text-[9px] font-black text-primary uppercase mt-1 tracking-tighter">Mi Cuenta</span>
                         </a>
                     @else
                         <button onclick="showGoogleLoginAlert()" class="flex flex-col items-center group animate-jump-google hover:animate-none">
