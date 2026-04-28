@@ -15,7 +15,7 @@ class AdminController extends Controller
 
     public function index()
     {
-        $products = Product::all();
+        $products = Product::orderBy('category_id')->orderBy('sort_order')->get();
         return view('admin.products', compact('products'));
     }
 
@@ -33,6 +33,7 @@ class AdminController extends Controller
             'price' => 'required|numeric',
             'image' => 'nullable|image|max:2048',
             'category_id' => 'required|exists:categories,id',
+            'sort_order' => 'required|integer|min:0',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
@@ -74,6 +75,7 @@ class AdminController extends Controller
             'price' => 'required|numeric',
             'image' => 'nullable|image|max:2048',
             'category_id' => 'required|exists:categories,id',
+            'sort_order' => 'required|integer|min:0',
         ]);
 
         $validated['is_active'] = $request->has('is_active');

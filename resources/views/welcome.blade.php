@@ -91,6 +91,33 @@
 
     <!-- Custom CSS Base -->
     <style>
+        /* Modern Slim Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: {{ $primaryColor }};
+            border-radius: 20px;
+            border: 2px solid #f8fafc;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: {{ $primaryColor }};
+            filter: brightness(0.9);
+        }
+
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: {{ $primaryColor }} #f8fafc;
+        }
+
         body {
             background-color: #FDFFFC;
             color: #24140a;
@@ -106,6 +133,51 @@
         .reveal.active {
             opacity: 1;
             transform: translateY(0);
+        }
+
+        /* Fix category buttons outline and active state */
+        .category-filter-btn {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .category-filter-btn:focus, .category-filter-btn:active {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        .category-filter-btn .cat-icon-container {
+            background-color: white;
+            border-color: #f9fafb;
+            color: #9ca3af;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Hover & Active States */
+        .category-filter-btn:hover .cat-icon-container,
+        .category-filter-btn.active .cat-icon-container {
+            background-color: var(--cat-color, var(--tw-primary)) !important;
+            border-color: var(--cat-color, var(--tw-primary)) !important;
+            color: white !important;
+            transform: scale(1.05);
+        }
+
+        .category-filter-btn.active .cat-icon-container {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-filter-btn.active span {
+            color: var(--cat-color, var(--tw-primary)) !important;
+        }
+        
+        /* Specific for 'TODO' button which might not have --cat-color */
+        .category-filter-btn[data-category="all"].active .cat-icon-container,
+        .category-filter-btn[data-category="all"]:hover .cat-icon-container {
+            background-color: {{ $primaryColor }} !important;
+            border-color: {{ $primaryColor }} !important;
+        }
+        .category-filter-btn[data-category="all"].active span {
+            color: {{ $primaryColor }} !important;
         }
 
         /* Nice blob background for hero */
@@ -663,26 +735,23 @@
                            class="w-full bg-white border-2 border-gray-100 rounded-2xl py-3.5 pl-14 pr-6 text-textMain font-bold text-base shadow-xl shadow-gray-200/40 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-gray-300">
                 </div>
 
-                <!-- Categories Filter Horizontal -->
+                <!-- Categories Filter (Grid/Wrap) -->
                 <div class="relative">
-                    <div class="flex items-center gap-4 overflow-x-auto pb-4 px-2 scrollbar-hide -mx-2 scroll-smooth" id="categories-scroller">
+                    <div class="flex flex-wrap items-start justify-center gap-x-6 gap-y-8 pb-4 px-2" id="categories-scroller">
                         <!-- Botón TODO -->
-                        <button class="category-filter-btn flex flex-col items-center gap-2 shrink-0 group active" data-category="all">
-                            <div class="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-primary group-hover:text-white group-[.active]:bg-primary group-[.active]:text-white shadow-lg shadow-transparent group-[.active]:shadow-primary/20 transition-all duration-300 border-2 border-transparent group-[.active]:border-white">
+                        <button class="category-filter-btn flex flex-col items-center gap-2 group active" data-category="all">
+                            <div class="cat-icon-container w-14 h-14 rounded-2xl flex items-center justify-center border-2 shadow-lg shadow-transparent transition-all duration-300">
                                 <i class="fas fa-border-all text-xl"></i>
                             </div>
-                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 group-[.active]:text-primary transition-all">Todo</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 transition-all text-center">Todo</span>
                         </button>
 
                         @foreach($categories as $category)
-                        <button class="category-filter-btn flex flex-col items-center gap-2 shrink-0 group" data-category="cat-{{ $category->id }}">
-                            <div class="w-14 h-14 rounded-2xl bg-white border-2 border-gray-50 flex items-center justify-center text-gray-400 group-hover:text-white group-[.active]:text-white shadow-lg shadow-transparent group-[.active]:shadow-primary/20 transition-all duration-300 group-hover:scale-105 active:scale-95"
-                                 style="--cat-color: {{ $category->color }}"
-                                 onmouseover="this.style.backgroundColor='{{ $category->color }}'; this.style.borderColor='{{ $category->color }}'"
-                                 onmouseout="if(!this.closest('.group').classList.contains('active')){ this.style.backgroundColor='white'; this.style.borderColor='#f9fafb' }">
+                        <button class="category-filter-btn flex flex-col items-center gap-2 group" data-category="cat-{{ $category->id }}" style="--cat-color: {{ $category->color }}">
+                            <div class="cat-icon-container w-14 h-14 rounded-2xl flex items-center justify-center border-2 shadow-lg shadow-transparent transition-all duration-300 active:scale-95">
                                 <i class="{{ $category->icon ?: 'fas fa-utensils' }} text-xl transition-transform group-hover:rotate-12"></i>
                             </div>
-                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-textMain group-[.active]:text-primary transition-all">{{ $category->name }}</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 transition-all text-center">{{ $category->name }}</span>
                         </button>
                         @endforeach
                     </div>
@@ -691,7 +760,7 @@
 
             <!-- Dynamic Menu Section -->
             @foreach($categories as $category)
-            @if($category->products->count() > 0)
+            @if($category->is_active)
             <div class="mb-20 category-section" id="cat-{{ $category->id }}">
                 <div class="flex items-center gap-4 mb-10 reveal">
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg" style="background-color: {{ $category->color }}">
@@ -701,6 +770,7 @@
                     <div class="h-px bg-gray-200 flex-grow"></div>
                 </div>
 
+                @if($category->products->count() > 0)
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-6">
                     @foreach($category->products as $product)
                     <div class="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 food-card reveal" data-title="{{ strtolower($product->title) }}">
@@ -730,6 +800,27 @@
                     </div>
                     @endforeach
                 </div>
+                @else
+                <!-- Coming Soon Card -->
+                <div class="reveal">
+                    <div class="rounded-[3rem] p-10 text-center border-4 border-dashed relative overflow-hidden group" 
+                         style="border-color: {{ $category->color }}44; background-color: {{ $category->color }}08">
+                        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110 duration-500"
+                             style="background-color: {{ $category->color }}22; color: {{ $category->color }}">
+                            <i class="{{ $category->icon ?: 'fas fa-utensils' }} text-3xl"></i>
+                        </div>
+                        <h4 class="text-3xl font-display mb-3" style="color: {{ $category->color }}">Próximamente</h4>
+                        <p class="text-sm font-medium max-w-md mx-auto leading-relaxed" style="color: {{ $category->color }}aa">
+                            {{ $category->description ?: 'Muy pronto podrás disfrutar de nuestros mejores productos en esta categoría.' }}
+                        </p>
+                        
+                        <!-- Decorative background icon -->
+                        <div class="absolute -right-10 -bottom-10 opacity-[0.03] pointer-events-none transform rotate-12">
+                            <i class="{{ $category->icon ?: 'fas fa-utensils' }} text-[150px]"></i>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
             @endif
             @endforeach
@@ -1430,7 +1521,7 @@
 
             function filterProducts() {
                 var query = productSearch.val().trim().toLowerCase();
-                var activeCategory = $('.category-filter-btn.active').data('category');
+                var activeCategory = $('.category-filter-btn.active').data('category') || 'all';
 
                 categorySections.each(function() {
                     var section = $(this);
@@ -1442,26 +1533,39 @@
                         return;
                     }
 
-                    // Dentro de la categoría permitida, filtramos los productos por búsqueda
-                    var hasVisibleProductsInSection = false;
-                    section.find('.food-card').each(function() {
-                        var card = $(this);
-                        var title = card.data('title') || "";
-                        var matchesQuery = query === "" || title.includes(query);
+                    // Verificamos si es una sección con productos o de "Próximamente"
+                    var foodCards = section.find('.food-card');
+                    var hasProducts = foodCards.length > 0;
 
-                        if (matchesQuery) {
-                            card.removeClass('hidden').addClass('reveal active');
-                            hasVisibleProductsInSection = true;
+                    if (hasProducts) {
+                        // Filtramos los productos por búsqueda
+                        var hasVisibleProductsInSection = false;
+                        foodCards.each(function() {
+                            var card = $(this);
+                            var title = card.data('title') || "";
+                            var matchesQuery = query === "" || title.includes(query);
+
+                            if (matchesQuery) {
+                                card.removeClass('hidden').addClass('reveal active');
+                                hasVisibleProductsInSection = true;
+                            } else {
+                                card.addClass('hidden');
+                            }
+                        });
+
+                        // Mostramos la sección si hay productos que coincidan
+                        if (hasVisibleProductsInSection) {
+                            section.removeClass('hidden');
                         } else {
-                            card.addClass('hidden');
+                            section.addClass('hidden');
                         }
-                    });
-
-                    // Mostramos u ocultamos la sección completa según si hay productos visibles
-                    if (hasVisibleProductsInSection) {
-                        section.removeClass('hidden');
                     } else {
-                        section.addClass('hidden');
+                        // Es una sección de "Próximamente": Solo se muestra si NO hay búsqueda activa
+                        if (query === "") {
+                            section.removeClass('hidden');
+                        } else {
+                            section.addClass('hidden');
+                        }
                     }
                 });
 
@@ -1483,9 +1587,22 @@
                 }
             }
 
+            // Restore saved category on load
+            var savedCat = localStorage.getItem('active_category') || 'all';
+            categoryBtns.removeClass('active');
+            var $targetBtn = $('.category-filter-btn[data-category="' + savedCat + '"]');
+            if ($targetBtn.length) {
+                $targetBtn.addClass('active');
+            } else {
+                $('.category-filter-btn[data-category="all"]').addClass('active');
+            }
+            filterProducts();
+
             productSearch.on('input', filterProducts);
 
             categoryBtns.on('click', function() {
+                var cat = $(this).data('category');
+                localStorage.setItem('active_category', cat);
                 categoryBtns.removeClass('active');
                 $(this).addClass('active');
                 filterProducts();

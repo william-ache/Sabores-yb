@@ -14,8 +14,9 @@ class Product extends Model
         'description',
         'price',
         'image_path',
-        'category',
-        'category_id'
+        'category_id',
+        'is_active',
+        'sort_order'
     ];
 
     public function category_rel()

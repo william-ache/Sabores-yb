@@ -22,6 +22,7 @@
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-primary/10 border-b border-primary/10">
                 <tr>
+                    <th class="px-8 py-5 text-left text-xs font-bold text-textMain uppercase tracking-widest">Orden</th>
                     <th class="px-8 py-5 text-left text-xs font-bold text-textMain uppercase tracking-widest">Imagen</th>
                     <th class="px-8 py-5 text-left text-xs font-bold text-textMain uppercase tracking-widest">Producto</th>
                     <th class="px-8 py-5 text-left text-xs font-bold text-textMain uppercase tracking-widest">Categoría</th>
@@ -33,6 +34,11 @@
             <tbody class="bg-white divide-y divide-gray-100">
                 @forelse($products as $product)
                 <tr class="hover:bg-primary/5 transition-colors duration-200">
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <div class="text-xs font-bold text-gray-400 bg-gray-50 h-8 w-8 flex items-center justify-center rounded-lg border border-gray-100">
+                            {{ $product->sort_order }}
+                        </div>
+                    </td>
                     <td class="px-8 py-5 whitespace-nowrap">
                         <div class="relative h-14 w-14 rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 shadow-sm">
                             @if($product->image_path)
@@ -95,7 +101,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-8 py-20 text-center">
+                    <td colspan="7" class="px-8 py-20 text-center">
                         <div class="flex flex-col items-center gap-4">
                             <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center text-gray-200 text-4xl">
                                 <i class="fas fa-box-open"></i>

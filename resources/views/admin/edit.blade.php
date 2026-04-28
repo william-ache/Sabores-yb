@@ -41,6 +41,11 @@
                             @endforeach
                         </select>
                     </div>
+                    
+                    <div>
+                        <label class="block text-primary text-xs font-bold uppercase tracking-widest mb-3 ml-1">Orden de Visualización</label>
+                        <input type="number" name="sort_order" value="{{ $product->sort_order }}" min="0" class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 px-6 text-textMain font-bold focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" required>
+                    </div>
 
                     <div class="md:col-span-2 space-y-4">
                         <label class="block text-primary text-xs font-bold uppercase tracking-widest mb-3 ml-1">Imagen del Producto (Cuadrada idealmente)</label>

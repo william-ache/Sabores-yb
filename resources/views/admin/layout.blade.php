@@ -54,6 +54,33 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        /* Modern Slim Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: {{ $primaryColor }};
+            border-radius: 20px;
+            border: 2px solid #f8fafc;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: {{ $primaryColor }};
+            filter: brightness(0.9);
+        }
+
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: {{ $primaryColor }} #f8fafc;
+        }
+
         body { font-family: 'Outfit', sans-serif; background-color: #fefefe; }
         .font-display { font-family: 'Lilita One', cursive; }
         /* Branded SweetAlert Style */

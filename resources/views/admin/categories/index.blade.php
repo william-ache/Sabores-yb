@@ -27,9 +27,8 @@
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-secondary/10 border-b border-secondary/10">
                 <tr>
-                    <th class="px-8 py-5 text-left text-xs font-bold text-textMain uppercase tracking-widest">ID</th>
-                    <th class="px-8 py-5 text-left text-xs font-bold text-textMain uppercase tracking-widest">Nombre</th>
                     <th class="px-8 py-5 text-left text-xs font-bold text-textMain uppercase tracking-widest">Orden</th>
+                    <th class="px-8 py-5 text-left text-xs font-bold text-textMain uppercase tracking-widest">Nombre</th>
                     <th class="px-8 py-5 text-left text-xs font-bold text-textMain uppercase tracking-widest">Estado</th>
                     <th class="px-8 py-5 text-right text-xs font-bold text-textMain uppercase tracking-widest">Acciones</th>
                 </tr>
@@ -38,13 +37,12 @@
                 @forelse($categories as $category)
                 <tr class="hover:bg-secondary/5 transition-colors duration-200">
                     <td class="px-8 py-5 whitespace-nowrap">
-                        <div class="text-base font-bold text-gray-400">#{{ $category->id }}</div>
+                        <div class="text-xs font-bold text-gray-400 bg-gray-50 h-8 w-8 flex items-center justify-center rounded-lg border border-gray-100">
+                            {{ $category->sort_order }}
+                        </div>
                     </td>
                     <td class="px-8 py-5 whitespace-nowrap">
                         <div class="text-base font-bold text-textMain">{{ $category->name }}</div>
-                    </td>
-                    <td class="px-8 py-5 whitespace-nowrap">
-                        <div class="text-base font-bold text-gray-400">#{{ $category->sort_order }}</div>
                     </td>
                     <td class="px-8 py-5 whitespace-nowrap">
                         @if($category->is_active)
@@ -86,7 +84,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="3" class="px-8 py-20 text-center">
+                    <td colspan="4" class="px-8 py-20 text-center">
                         <div class="flex flex-col items-center gap-4">
                             <div class="text-gray-400 font-medium">Aún no hay categorías registradas.</div>
                         </div>
