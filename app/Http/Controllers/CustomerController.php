@@ -2,56 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function dashboard()
     {
-        $customers = Customer::all();
-        return view('admin.customers.index', compact('customers'));
+        $user = Auth::user();
+        if (!$user) {
+            return redirect()->route('admin.login');
+        }
+
+        // Mock data for now since we don't have orders linked to users yet
+        $orders = []; 
+
+        return view('customer.dashboard', compact('user', 'orders'));
     }
 
-    public function create()
+    public function profile()
     {
-        return view('admin.customers.create');
+        return view('customer.profile', ['user' => Auth::user()]);
     }
 
-    public function store(Request $request)
+    public function payments()
     {
-        $request->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'cedula' => 'required|unique:customers',
-            'phone' => 'required'
-        ]);
-
-        Customer::create($request->all());
-        return redirect()->route('customers.index')->with('success', 'Cliente creado.');
-    }
-
-    public function edit(Customer $customer)
-    {
-        return view('admin.customers.edit', compact('customer'));
-    }
-
-    public function update(Request $request, Customer $customer)
-    {
-        $request->validate([
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'cedula' => 'required|unique:customers,cedula,' . $customer->id,
-            'phone' => 'required'
-        ]);
-
-        $customer->update($request->all());
-        return redirect()->route('customers.index')->with('success', 'Cliente actualizado.');
-    }
-
-    public function destroy(Customer $customer)
-    {
-        $customer->delete();
-        return redirect()->route('customers.index')->with('success', 'Cliente eliminado.');
+        return view('customer.payments');
     }
 }

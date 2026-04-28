@@ -8,7 +8,19 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\CustomerController;
 use App\Models\Product;
+
+Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
+// Rutas de Cliente (Login con Google)
+Route::group(['prefix' => 'mi-cuenta', 'middleware' => 'auth'], function() {
+    Route::get('/', [CustomerController::class, 'dashboard'])->name('customer.dashboard');
+    Route::get('/perfil', [CustomerController::class, 'profile'])->name('customer.profile');
+    Route::get('/pagos', [CustomerController::class, 'payments'])->name('customer.payments');
+});
 
 Route::get('/', function () {
     $categories = \App\Models\Category::where('is_active', true)

@@ -8,19 +8,19 @@
   "theme_color": "#00A859",
   "icons": [
     {
-      "src": "assets/images/brand/logo-solid.png",
+      "src": "images/brand/logo-solid.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "assets/images/brand/logo-solid.png",
+      "src": "images/brand/logo-solid.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "assets/images/brand/logo-solid.png",
+      "src": "images/brand/logo-solid.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"

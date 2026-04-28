@@ -33,12 +33,24 @@ class AdminController extends Controller
             'price' => 'required|numeric',
             'image' => 'nullable|image|max:2048',
             'category_id' => 'required|exists:categories,id',
-            'is_active' => 'nullable|boolean',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
 
-        if ($request->hasFile('image')) {
+        // Manejar imagen recortada (Base64)
+        if ($request->filled('cropped_image')) {
+            $imageData = $request->input('cropped_image');
+            $fileName = 'products/' . time() . '_' . uniqid() . '.jpg';
+            
+            // Eliminar el prefijo data:image/jpeg;base64,
+            $data = explode(',', $imageData);
+            $decodedImage = base64_decode($data[1]);
+            
+            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $decodedImage);
+            $validated['image_path'] = $fileName;
+        } 
+        // Fallback para imagen normal si no hay recorte o si falla
+        elseif ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
             $validated['image_path'] = $path;
         }
@@ -62,12 +74,22 @@ class AdminController extends Controller
             'price' => 'required|numeric',
             'image' => 'nullable|image|max:2048',
             'category_id' => 'required|exists:categories,id',
-            'is_active' => 'nullable|boolean',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
 
-        if ($request->hasFile('image')) {
+        // Manejar imagen recortada (Base64)
+        if ($request->filled('cropped_image')) {
+            $imageData = $request->input('cropped_image');
+            $fileName = 'products/' . time() . '_' . uniqid() . '.jpg';
+            
+            $data = explode(',', $imageData);
+            $decodedImage = base64_decode($data[1]);
+            
+            \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $decodedImage);
+            $validated['image_path'] = $fileName;
+        } 
+        elseif ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
             $validated['image_path'] = $path;
         }

@@ -161,6 +161,15 @@
             animation: shake-btn 5s cubic-bezier(.36, .07, .19, .97) infinite;
         }
 
+        /* Jumping animation for Google Login */
+        @keyframes jump-google {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-jump-google {
+            animation: jump-google 1.5s ease-in-out infinite;
+        }
+
         /* Adjustments for Installed App (Standalone) Mode */
         @media (display-mode: standalone) {
             #navbar .nav-logo {
@@ -184,7 +193,7 @@
     <div id="pwa-splash" class="fixed inset-0 bg-white z-[1000] flex flex-col items-center justify-center transition-opacity duration-700">
         <div class="flex flex-col items-center animate-pulse">
             <img src="{{ $logo ? asset('storage/' . $logo) : '/images/brand/logo.png' }}" alt="{{ $appName }}" class="w-48 h-48 object-contain mb-4">
-            <h1 class="text-3xl font-display text-textMain tracking-wide">{{ $appName }}</h1>
+            <h1 class="text-3xl font-display text-textMain tracking-wide">{!! $appName !!}</h1>
         </div>
         <div class="absolute bottom-12 left-0 w-full text-center">
             <p class="text-gray-300 text-[10px] font-mono tracking-widest">VERSION 1.0.0</p>
@@ -291,225 +300,264 @@
             class="absolute -top-2 -right-2 bg-yellow-400 text-textMain text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-white scale-0 transition-transform duration-300">0</span>
     </button>
 
-    <!-- Cart Dropup -->
-    <div id="cart-dropdown"
-        class="fixed bottom-20 sm:bottom-24 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-80 lg:w-96 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border-2 border-orange-100 z-50 transform scale-0 origin-bottom-right transition-transform duration-300 flex flex-col max-h-[70vh] ring-8 ring-black/5">
-        <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-3xl">
-            <div class="flex items-center gap-2">
-                <h3 class="font-display text-xl text-textMain"><i
-                        class="fas fa-shopping-basket text-primary mr-2"></i>Tu Orden</h3>
-                <button id="btn-config-order"
-                    class="text-[10px] bg-gray-200 text-gray-700 px-2 py-1 rounded-md font-bold hover:bg-gray-300 transition shadow-sm"><i
-                        class="fas fa-cog mr-1"></i>Configurar Pedido</button>
+    <!-- Unified Checkout MODAL (Full Screen Flow) -->
+    <div id="checkout-modal" class="fixed inset-0 h-screen h-[100dvh] z-[100] bg-white hidden flex-col transition-all duration-500 overflow-hidden">
+        <!-- Header -->
+        <div class="px-4 py-4 sm:px-6 sm:py-6 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 relative">
+            <div class="absolute left-6 top-1/2 -translate-y-1/2">
+                <button id="btn-checkout-back" class="text-gray-400 hover:text-textMain transition flex items-center gap-2 p-2 -ml-2">
+                    <i class="fas fa-arrow-left"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest mt-0.5">Atrás</span>
+                </button>
             </div>
-            <div class="flex items-center gap-4">
-                <button id="clear-cart-btn" class="text-xs text-red-500 font-bold hover:underline hidden"><i
-                        class="fas fa-trash-alt mr-1"></i>Vaciar</button>
-                <button id="close-cart-btn" class="text-gray-400 hover:text-red-500 transition"><i
-                        class="fas fa-times text-xl"></i></button>
+            <h3 class="font-display text-xl sm:text-2xl text-textMain mx-auto tracking-tight">Finalizar Pedido</h3>
+            <div class="absolute right-6 top-1/2 -translate-y-1/2">
+                <button id="btn-checkout-close" class="text-gray-400 hover:text-red-500 transition p-2 -mr-2">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
         </div>
-        <div id="cart-items" class="p-5 overflow-y-auto flex-grow space-y-4">
-            <div class="text-center text-gray-400 py-4" id="empty-cart-msg">Tu carrito está vacío</div>
-        </div>
-        <div class="p-5 border-t border-gray-100 bg-gray-50 rounded-b-3xl">
-            <div class="flex justify-between items-start mb-4">
-                <span class="font-bold text-gray-600 mt-1">Total:</span>
-                <span id="cart-total" class="font-display text-2xl text-primary text-right leading-none">Bs.
-                    0.00<br><span class="text-xs text-gray-400 mt-1 block">Ref: $0.00</span></span>
-            </div>
-            <button id="btn-comprar"
-                class="w-full bg-green-500 text-white font-bold py-3 rounded-full hover:bg-green-600 transition shadow-lg shadow-green-500/30 flex justify-center items-center">
-                <i class="fab fa-whatsapp text-xl mr-2"></i> Pedir por WhatsApp
-            </button>
-        </div>
-    </div>
 
-    <!-- Modal de Tienda Cerrada -->
-    <div id="closed-store-modal"
-        class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div
-            class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300">
-            <div
-                class="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                <i class="fas fa-store-slash"></i>
+        <!-- Progress Stepper -->
+        <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gray-50/50 border-b border-gray-100 flex justify-center items-center gap-6 sm:gap-10 shrink-0 overflow-x-auto scrollbar-hide">
+            <div class="flex flex-col items-center gap-2">
+                <div class="checkout-step-dot active w-3 h-3 rounded-full bg-primary ring-4 ring-primary/10 transition-all duration-300" data-step="1"></div>
+                <span class="text-[8px] font-black text-primary uppercase whitespace-nowrap">Tu Orden</span>
             </div>
-            <h3 class="text-2xl font-display text-textMain text-center mb-2">¡Estamos Cerrados!</h3>
-            <p class="text-gray-600 text-center mb-6 text-base">Nuestro horario de atención es: <b>{{ $schedule }}</b>. Por favor, realiza tu pedido dentro de este horario.</p>
-            <button id="btn-close-store-modal"
-                class="w-full bg-primary text-white font-bold py-3 rounded-full hover:bg-green-700 transition shadow-lg flex justify-center items-center mb-2">
-                Entendido
-            </button>
-            <button id="btn-test-continue"
-                class="w-full text-xs text-red-400 hover:text-red-600 transition underline decoration-red-200 py-1">
-                Omitir horario (Simular pedido)
-            </button>
-        </div>
-    </div>
-
-    <!-- Modal de Disponibilidad -->
-    <div id="availability-modal"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div
-            class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300">
-            <div
-                class="w-16 h-16 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
-                <i class="fas fa-exclamation-triangle"></i>
+            <div class="w-8 sm:w-12 h-px bg-gray-200 -mt-5"></div>
+            <div class="flex flex-col items-center gap-2">
+                <div class="checkout-step-dot w-3 h-3 rounded-full bg-gray-200 transition-all duration-300" data-step="2"></div>
+                <span class="text-[8px] font-black text-gray-400 uppercase whitespace-nowrap">Entrega</span>
             </div>
-            <h3 class="text-2xl font-display text-textMain text-center mb-2">¡Aviso Importante!</h3>
-            <p class="text-gray-600 text-center mb-6 text-base"><b>Confirma la disponibilidad de los sabores por
-                    WhatsApp</b> antes de realizar cualquier pago.</p>
-            <button id="btn-confirm-whatsapp"
-                class="w-full bg-green-500 text-white font-bold py-3 rounded-full hover:bg-green-600 transition shadow-lg shadow-green-500/30 flex justify-center items-center group">
-                <i class="fab fa-whatsapp text-xl mr-2 group-hover:scale-110 transition-transform"></i> Enviar Pedido a
-                WhatsApp
-            </button>
-            <button id="btn-copy-all-final"
-                class="w-full mt-3 py-3 px-6 bg-gray-100 text-gray-700 font-bold rounded-full hover:bg-gray-200 transition-all flex items-center justify-center gap-2 border border-gray-200 shadow-sm text-sm">
-                <i class="fas fa-copy"></i> Copiar todos los datos de pago
-            </button>
-            <button id="btn-cancel-modal"
-                class="w-full mt-3 text-gray-400 font-bold py-2 rounded-full hover:text-gray-600 transition">
-                Volver al menú
-            </button>
+            <div class="w-8 sm:w-12 h-px bg-gray-200 -mt-5"></div>
+            <div class="flex flex-col items-center gap-2">
+                <div class="checkout-step-dot w-3 h-3 rounded-full bg-gray-200 transition-all duration-300" data-step="3"></div>
+                <span class="text-[8px] font-black text-gray-400 uppercase whitespace-nowrap">Detalles</span>
+            </div>
+            <div class="w-8 sm:w-12 h-px bg-gray-200 -mt-5"></div>
+            <div class="flex flex-col items-center gap-2">
+                <div class="checkout-step-dot w-3 h-3 rounded-full bg-gray-200 transition-all duration-300" data-step="4"></div>
+                <span class="text-[8px] font-black text-gray-400 uppercase whitespace-nowrap">Confirmar</span>
+            </div>
         </div>
-    </div>
 
-    <!-- Modal de Configuración de Orden -->
-    <div id="config-order-modal"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[65] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div
-            class="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl transform scale-95 transition-transform duration-300">
-            <h3 class="text-2xl font-display text-textMain text-center mb-4">¿Cómo deseas tu pedido?</h3>
-            <div class="space-y-4 mb-6">
-                <!-- Opción PickUp -->
-                <button id="btn-pickup"
-                    class="w-full relative bg-gray-50 border-2 border-gray-200 hover:border-primary hover:bg-green-50 rounded-xl p-4 text-left transition group">
-                    <div class="flex items-center">
-                        <div
-                            class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary text-xl shadow-sm mr-4 group-hover:scale-110 transition">
+        <!-- Screens Container -->
+        <div class="flex-grow overflow-y-auto p-4 sm:p-10 relative bg-white">
+            <div class="max-w-xl mx-auto">
+                
+                <!-- STEP 1: Revise Items -->
+                <div id="checkout-step-1" class="checkout-screen flex flex-col h-full animate-in fade-in duration-300">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h4 class="text-xl font-display text-textMain tracking-tight">Tu Selección</h4>
+                            <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Revisa los productos seleccionados</p>
+                        </div>
+                        <button id="clear-cart-btn" class="text-[9px] text-red-500 font-black uppercase tracking-widest bg-red-50 px-3 py-2 rounded-xl hover:bg-red-200 transition active:scale-95"><i class="fas fa-trash-alt mr-1"></i>Vaciar</button>
+                    </div>
+
+                    <div id="cart-items" class="space-y-4 mb-10 overflow-y-visible">
+                        <!-- Items inyectados por JS -->
+                    </div>
+
+                    <div class="mt-auto pt-6 border-t border-gray-100 bg-white sticky bottom-0 shadow-[0_-20px_20px_-10px_rgba(255,255,255,0.9)]">
+                        <div class="flex justify-between items-end mb-8">
+                            <div>
+                                <span class="text-[10px] font-black text-gray-300 uppercase tracking-widest block mb-1">Monto Total</span>
+                                <span id="cart-total" class="font-display text-4xl text-primary leading-none transition-all duration-300 block">Bs. 0.00</span>
+                                <span id="cart-total-usd" class="text-xs text-gray-400 font-bold uppercase tracking-tight mt-2 block">Ref: $0.00</span>
+                            </div>
+                        </div>
+                        <button id="btn-next-to-type" class="w-full bg-primary text-white font-black py-5 rounded-2xl shadow-xl shadow-primary/25 flex items-center justify-center gap-3 group transition-all hover:scale-[1.01] active:scale-95">
+                            <span class="text-base uppercase tracking-widest">Siguiente Paso</span>
+                            <i class="fas fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Delivery Type Selection -->
+                <div id="checkout-step-2" class="checkout-screen hidden animate-in fade-in slide-in-from-right duration-500">
+                    <div class="text-center mb-10">
+                        <h4 class="text-2xl font-display text-textMain tracking-tight">¿Cómo prefieres recibirlo?</h4>
+                        <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-2">Selecciona una modalidad</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6">
+                        <button id="btn-select-pickup" class="relative group bg-white border-2 border-gray-100 hover:border-primary rounded-[2.5rem] p-8 text-left transition-all shadow-xl shadow-gray-200/20 active:scale-95 overflow-hidden">
+                            <div class="flex items-center gap-6 relative z-10">
+                                <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-primary text-2xl group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                                    <i class="fas fa-store"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <h5 class="font-display text-xl text-textMain">Retiro en Local</h5>
+                                    <p class="text-xs text-gray-400 font-medium leading-relaxed mt-1">PickUp directo en nuestra sede.</p>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-200 group-hover:text-primary transition-colors"></i>
+                            </div>
+                        </button>
+
+                        <button id="btn-select-delivery" class="relative group bg-white border-2 border-gray-100 hover:border-orange-500 rounded-[2.5rem] p-8 text-left transition-all shadow-xl shadow-gray-200/20 active:scale-95 overflow-hidden">
+                            <div class="flex items-center gap-6 relative z-10">
+                                <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-orange-500 text-2xl group-hover:bg-orange-500 group-hover:text-white transition-all shrink-0">
+                                    <i class="fas fa-motorcycle"></i>
+                                </div>
+                                <div class="flex-grow">
+                                    <h5 class="font-display text-xl text-textMain">Envío (Delivery)</h5>
+                                    <p class="text-xs text-gray-400 font-medium leading-relaxed mt-1">Llevamos el sabor hasta tu ubicación.</p>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-200 group-hover:text-orange-500 transition-colors"></i>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="mt-12 text-center">
+                        <button class="btn-step-back py-3 px-6 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-textMain transition-all">
+                            <i class="fas fa-arrow-left mr-2"></i> Volver al Carrito
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Delivery Details (MAPA / PICKUP INFO) -->
+                <div id="checkout-step-3" class="checkout-screen hidden animate-in fade-in slide-in-from-right duration-500 pb-20">
+                    <div id="view-delivery-input" class="space-y-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <h4 class="text-xl font-display text-textMain tracking-tight">Tu Ubicación</h4>
+                                <p class="text-[9px] text-gray-400 font-black uppercase tracking-widest mt-0.5">Indica el destino del envío</p>
+                            </div>
+                            <div class="bg-orange-50 text-orange-600 text-[8px] font-black px-2 py-1.5 rounded-lg border border-orange-100 whitespace-nowrap">
+                                TARIFA: $0.43 / KM
+                            </div>
+                        </div>
+ 
+                        <div class="text-center">
+                            <button id="btn-use-gps" type="button" class="group inline-flex items-center gap-3 bg-white border-2 border-primary/20 hover:border-primary px-5 py-3 rounded-[2rem] text-[11px] font-black uppercase tracking-widest text-primary shadow-xl shadow-primary/5 transition-all active:scale-95 mb-3">
+                                <div class="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                                    <i class="fas fa-location-arrow text-xs"></i>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-[7px] text-gray-400 font-bold leading-none mb-0.5">Detectar automáticamente</div>
+                                    <div class="leading-none tracking-tight">Mi Ubicación GPS</div>
+                                </div>
+                            </button>
+                            <p class="text-[9px] text-gray-400 font-medium italic mb-4">
+                                <i class="fas fa-info-circle mr-1 text-primary/40"></i> Mueve el marcador naranja si es necesario
+                            </p>
+                        </div>
+
+                        <div id="delivery-map" class="w-full h-40 sm:h-64 bg-gray-100 rounded-[2rem] border-4 border-gray-50 shadow-inner z-0 overflow-hidden mb-4 relative">
+                        </div>
+
+                        <div class="space-y-1 mb-4">
+                            <label class="text-[8px] text-gray-300 font-black uppercase tracking-widest ml-1">Tu Dirección (Referencial)</label>
+                            <textarea id="delivery-address-manual" rows="2" placeholder="Cargando dirección..." class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-5 text-[11px] font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition outline-none resize-none leading-tight"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-[8px] text-gray-300 font-black uppercase tracking-widest ml-1">Tu Nombre</label>
+                                <input type="text" id="delivery-name" placeholder="Ej: Juan P." class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-5 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[8px] text-gray-300 font-black uppercase tracking-widest ml-1">Tu Teléfono</label>
+                                <input type="tel" id="delivery-phone" placeholder="Ej: 0412..." class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-5 text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/5 transition outline-none">
+                            </div>
+                        </div>
+
+                        <div class="bg-orange-50/40 p-4 rounded-[1.5rem] border border-orange-100 flex justify-between items-center mt-4">
+                            <div>
+                                <span class="text-[8px] text-orange-400 font-black uppercase tracking-widest ml-1 block mb-0.5">Costo Estimado</span>
+                                <p class="text-[9px] text-gray-500 font-black italic"><i class="fas fa-route mr-1 text-orange-300"></i> <span id="delivery-distance">0.00</span> km</p>
+                            </div>
+                            <div class="text-right">
+                                <span id="delivery-cost" class="font-display text-2xl text-orange-600 tracking-tighter leading-none block">Bs. 0.00</span>
+                                <span class="text-[9px] text-gray-400 font-bold uppercase tracking-tight opacity-70">Ref: $0.00</span>
+                            </div>
+                        </div>
+
+                        <button id="btn-confirm-delivery" class="w-full bg-orange-500 text-white font-black py-4 rounded-[1.5rem] shadow-xl shadow-orange-500/20 flex items-center justify-center gap-3 mt-4 transition-all hover:scale-[1.01] active:scale-95">
+                            <span class="uppercase text-xs tracking-widest">Confirmar Datos</span>
+                            <i class="fas fa-check-circle text-sm"></i>
+                        </button>
+
+                        <button class="btn-step-back w-full py-2 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-textMain transition-all">
+                            <i class="fas fa-arrow-left mr-1"></i> Volver
+                        </button>
+                    </div>
+                </div>
+
+                    <div id="view-pickup-info" class="hidden text-center py-10 animate-in zoom-in duration-300 space-y-8">
+                        <div class="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary text-5xl ring-8 ring-primary/5 animate-pulse">
                             <i class="fas fa-store"></i>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-800 text-lg">Retiro en Local</h4>
-                            <p class="text-xs text-gray-500 mt-1">Busca tu pedido por PickUp</p>
+                            <h4 class="text-3xl font-display text-textMain tracking-tight">¡Genial! Vienes al Local</h4>
+                            <p class="text-gray-400 text-sm max-w-xs mx-auto mt-6 leading-relaxed font-medium">Te esperamos en la siguiente dirección: <br><b class="text-textMain block mt-2 text-base font-display">{!! $address !!}</b></p>
+                        </div>
+                        <button id="btn-confirm-pickup" class="w-full bg-primary text-white font-black py-5 rounded-[2rem] shadow-2xl shadow-primary/30 flex items-center justify-center gap-4 transition-all hover:scale-[1.01] active:scale-95">
+                            <span class="uppercase tracking-widest">Siguiente</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+
+                        <button class="btn-step-back w-full py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-textMain transition-all">
+                            <i class="fas fa-arrow-left mr-2"></i> Volver al paso anterior
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Checkout Summary -->
+                <div id="checkout-step-4" class="checkout-screen hidden animate-in fade-in duration-500 text-center space-y-10 pb-32">
+                    <div class="space-y-3">
+                        <h4 class="text-3xl font-display text-textMain tracking-tight">Resumen Final</h4>
+                        <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">Todo listo para enviar</p>
+                    </div>
+
+                    <div class="bg-gray-50/50 rounded-[3rem] p-8 sm:p-10 space-y-6 text-left border border-gray-100 shadow-inner">
+                        <!-- Items List -->
+                        <div id="summary-items" class="space-y-4 border-b border-gray-200 pb-6 mb-6">
+                            <!-- Items inyectados por JS -->
+                        </div>
+
+                        <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                            <span class="text-[10px] text-gray-300 font-black uppercase tracking-widest">Tipo de Orden</span>
+                            <span id="summary-type" class="text-sm font-black uppercase text-textMain tracking-tight">---</span>
+                        </div>
+                        <div id="summary-delivery-row" class="hidden flex justify-between items-center border-b border-gray-200 pb-4">
+                            <span class="text-[10px] text-gray-300 font-black uppercase tracking-widest">Costo Delivery</span>
+                            <span id="summary-delivery-cost" class="text-sm font-black text-orange-600 italic">Bs. 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-end pt-6">
+                            <span class="text-lg font-display text-textMain leading-none">TOTAL NETO</span>
+                            <div class="text-right">
+                                <span id="summary-total-bs" class="text-4xl font-display text-primary block leading-none">Bs. 0.00</span>
+                                <span id="summary-total-usd" class="text-xs text-gray-400 font-black uppercase tracking-tight mt-2 block">Ref: $0.00</span>
+                            </div>
                         </div>
                     </div>
-                </button>
-                <!-- Opción Delivery -->
-                <button id="btn-delivery"
-                    class="w-full relative bg-gray-50 border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 rounded-xl p-4 text-left transition group">
-                    <div class="flex items-center">
-                        <div
-                            class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-orange-500 text-xl shadow-sm mr-4 group-hover:scale-110 transition">
-                            <i class="fas fa-motorcycle"></i>
+
+                    <div class="bg-sky-50 p-6 rounded-[2.5rem] border border-sky-100 text-left flex gap-5">
+                        <div class="w-12 h-12 bg-sky-500 rounded-2xl flex items-center justify-center text-white text-xl shrink-0 shadow-lg shadow-sky-500/20">
+                            <i class="fas fa-paper-plane"></i>
                         </div>
                         <div>
-                            <h4 class="font-bold text-gray-800 text-lg">Envío (Delivery)</h4>
-                            <p class="text-xs text-gray-500 mt-1">Te lo llevamos a donde estés</p>
+                            <h5 class="text-[10px] font-black text-sky-800 uppercase tracking-tight">Instrucciones WhatsApp</h5>
+                            <p class="text-[11px] text-sky-700 leading-relaxed mt-1 font-medium italic">Al presionar el botón inferior se abrirá WhatsApp. Envía el mensaje generado para que podamos comenzar con tu pedido.</p>
                         </div>
                     </div>
-                </button>
-            </div>
-            <button id="btn-close-config-modal"
-                class="w-full text-gray-400 font-bold py-2 rounded-full hover:text-gray-600 transition">
-                Volver al carrito
-            </button>
-        </div>
-    </div>
 
-    <!-- Modal de Delivery (Mapa) -->
-    <div id="delivery-modal"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl p-5 sm:p-8 max-w-xl w-full shadow-2xl flex flex-col max-h-[95vh] overflow-y-auto">
-            <h3 class="text-xl font-display text-textMain mb-3 flex items-center justify-between">
-                <div><i class="fas fa-map-marked-alt text-orange-500 mr-2"></i>Destino de Envío</div>
-                <div
-                    class="bg-orange-100 text-orange-600 text-[10px] sm:text-xs font-sans font-semibold px-2 py-1 rounded-xl whitespace-nowrap border border-orange-200 shadow-sm flex flex-col items-end leading-none">
-                    <span class="font-sans font-semibold italic-none uppercase tracking-tight"><i
-                            class="fas fa-info-circle mr-1"></i>Tarifa: <span
-                            class="price-display text-orange-700 font-bold" data-dolar="0.43">Bs. -</span> / km</span>
-                    <span class="text-[8px] sm:text-[9px] font-normal opacity-70 mt-1">Ref: $0.43 / km</span>
+                    <button id="btn-confirm-whatsapp" class="w-full bg-green-500 text-white font-black py-6 rounded-[2.5rem] shadow-2xl shadow-green-500/40 flex items-center justify-center gap-4 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+                        <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <i class="fab fa-whatsapp text-3xl transition-transform group-hover:scale-110 group-hover:rotate-6"></i>
+                        <span class="text-xl uppercase tracking-widest">Enviar por WhatsApp</span>
+                    </button>
+                    
+                    <button class="btn-step-back w-full py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-textMain transition-all">
+                        <i class="fas fa-arrow-left mr-2"></i> Volver al paso anterior
+                    </button>
+
+                    <button id="btn-test-continue" class="text-[9px] text-gray-300 font-black uppercase tracking-widest hover:text-gray-500 transition mt-4">Omitir horario para pruebas</button>
                 </div>
-            </h3>
-            <p class="text-xs text-gray-500 mb-3">Busca tu zona o mueve el mapa para calcular el costo del delivery.</p>
 
-            <div class="mb-3 flex gap-2">
-                <input type="text" id="delivery-search-input" placeholder="Buscar sector (ej. Base Aragua)"
-                    class="flex-grow border border-gray-300 rounded-lg px-3 py-2 text-md focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500">
-                <button id="btn-search-location"
-                    class="bg-orange-500 text-white px-4 rounded-lg hover:bg-orange-600 transition"><i
-                        class="fas fa-search"></i></button>
             </div>
-
-            <button id="btn-gps-location"
-                class="w-full text-xs text-blue-600 font-semibold flex items-center justify-center gap-1 hover:underline mb-3 py-1">
-                <i class="fas fa-crosshairs"></i> Usar mi ubicación actual
-            </button>
-
-            <div id="delivery-map"
-                class="w-full h-[500px] bg-gray-200 rounded-xl mb-4 relative z-0 border border-gray-200 shadow-inner">
-            </div>
-
-            <!-- Datos de Contacto (Side by Side) -->
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="relative">
-                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wide ml-1 mb-1 block">Tu Nombre</label>
-                    <div class="relative">
-                        <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-orange-400 text-sm"></i>
-                        <input type="text" id="delivery-name" placeholder="Juan P."
-                            class="w-full border border-gray-200 rounded-xl pl-8 pr-2 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-gray-50/50">
-                    </div>
-                </div>
-                <div class="relative">
-                    <label class="text-[10px] text-gray-400 font-bold uppercase tracking-wide ml-1 mb-1 block">Tu Celular</label>
-                    <div class="relative">
-                        <i class="fas fa-phone absolute left-3 top-1/2 -translate-y-1/2 text-orange-400 text-sm"></i>
-                        <input type="tel" id="delivery-phone" placeholder="0412..."
-                            class="w-full border border-gray-200 rounded-xl pl-8 pr-2 py-2 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 bg-gray-50/50">
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-orange-50/80 border border-orange-100 rounded-xl p-3 mb-4 flex justify-between items-center"
-                id="delivery-info-box">
-                <div>
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Costo Estimado</p>
-                    <p class="text-xs text-gray-600 mt-0.5"><i class="fas fa-route text-gray-400 mr-1"></i>Distancia:
-                        <span id="delivery-distance" class="font-bold text-gray-800">0.00</span> km
-                    </p>
-                </div>
-                <div class="text-right">
-                    <p id="delivery-cost" class="font-sans font-semibold text-lg sm:text-xl text-orange-600">$0.00</p>
-                </div>
-            </div>
-
-            <!-- Warning minimum price -->
-            <div id="delivery-warning-box"
-                class="bg-red-50 border-2 border-red-200 rounded-xl p-3 mb-4 hidden shadow-sm translate-y-1 transition-all duration-300">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="bg-red-100 text-red-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-red-800 font-bold leading-tight">Ubicación muy cercana</p>
-                        <p class="text-[11px] text-red-600 mt-1 leading-tight">El costo de envío es menor a $0.20.
-                            Asegúrate de que la ubicación sea correcta o confirma que deseas continuar con este monto.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <button id="btn-confirm-delivery"
-                class="w-full bg-orange-500 text-white font-bold py-3 rounded-full hover:bg-orange-600 transition shadow-lg flex justify-center items-center group shadow-orange-500/30">
-                Confirmar <span id="delivery-total-btn" class="ml-1 text-orange-100 font-normal"></span> <i
-                    class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-            </button>
-            <button id="btn-cancel-delivery"
-                class="w-full mt-2 text-gray-400 font-bold py-2 rounded-full hover:text-gray-600 transition">
-                Volver
-            </button>
         </div>
     </div>
 
@@ -521,7 +569,7 @@
                 <a href="#menu" class="flex-shrink-0 flex items-center space-x-3 cursor-pointer">
                     <img class="h-20 w-auto drop-shadow-md nav-logo hover:scale-105 transition-transform duration-300" src="{{ $logo ? asset('storage/' . $logo) : '/images/brand/logo.png' }}"
                         alt="{{ $appName }} Logo">
-                    <span class="font-display tracking-wide text-xl text-primary drop-shadow-sm hidden sm:block">{{ $appName }}</span>
+                    <span class="font-display tracking-wide text-xl text-primary drop-shadow-sm hidden sm:block">{!! $appName !!}</span>
                 </a>
 
                 <!-- Navbar BCV Rate Display -->
@@ -535,16 +583,14 @@
                     </div>
                     <span id="bcv-date" class="text-[10px] sm:text-xs text-gray-500 font-medium mt-1"></span>
                 </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#menu"
-                        class="text-gray-800 hover:text-primary font-semibold transition border-b-2 border-primary">Menú</a>
-                    <a href="about.html"
-                        class="text-gray-800 hover:text-primary font-semibold transition hidden">Nuestra
-                        Historia</a>
-                </div>
-                <div class="md:hidden flex items-center">
-                    <button class="text-gray-800 hover:text-primary focus:outline-none" id="mobile-menu-btn">
-                        <i class="fas fa-bars text-3xl"></i>
+
+                <div class="flex items-center gap-4">
+                    <!-- Google Login Button (Jumping) - Now always visible and in place of the menu -->
+                    <button onclick="showGoogleLoginAlert()" class="flex flex-col items-center group animate-jump-google hover:animate-none">
+                        <div class="bg-white border-2 border-gray-100 shadow-sm rounded-full p-2 group-hover:bg-gray-50 transition-colors">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6">
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-500 uppercase -mt-0.5">Entrar</span>
                     </button>
                 </div>
             </div>
@@ -567,7 +613,7 @@
                     <i class="fas fa-map-marker-alt text-red-500/80 group-hover:animate-bounce"></i>
                     <span id="branch-banner-text"
                         class="underline decoration-2 underline-offset-4 decoration-red-500/30 group-hover:decoration-red-500">Ubícanos
-                        en {{ $address }}</span>
+                        en {!! $address !!}</span>
                 </a>
                 @if($branches->count() > 1)
                 <button onclick="showBranchSelector()" class="ml-2 text-[10px] bg-white/20 hover:bg-white/40 px-2 py-0.5 rounded-md transition border border-white/20 whitespace-nowrap">
@@ -577,15 +623,6 @@
             </div>
         </div>
     </nav>
-
-    <!-- Mobile Menu Layer -->
-    <div id="mobile-menu"
-        class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center text-3xl space-y-8 font-display hidden opacity-0 transition-opacity duration-300">
-        <button id="close-mobile-menu" class="absolute top-6 right-8 text-4xl text-gray-800"><i
-                class="fas fa-times"></i></button>
-        <a href="#menu" class="text-textMain hover:text-primary transition">Menú</a>
-        <a href="about.html" class="text-textMain hover:text-primary transition hidden">Nuestra Historia</a>
-    </div>
 
     <!-- Padding for fixed navbar + banner -->
     <div class="pt-32"></div>
@@ -601,19 +638,40 @@
                 <div class="w-24 h-1 bg-accent mx-auto rounded-full mt-6"></div>
             </div>
 
-            <!-- Disclaimer Note -->
-            <div class="mb-12 max-w-2xl mx-auto reveal">
-                <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-2xl shadow-sm">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-info-circle text-amber-500 text-xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-amber-800 font-medium">
-                                <b>Nota:</b> Las imágenes de la web son referenciales. ¡Muy pronto tendremos fotos
-                                reales de nuestras deliciosas empanadas!
-                            </p>
-                        </div>
+            <!-- Search & Filters Container -->
+            <div class="mb-12 max-w-2xl mx-auto space-y-6 reveal">
+                <!-- Search Bar -->
+                <div class="relative group">
+                    <div class="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <div class="w-0.5 h-6 bg-primary/20 rounded-full"></div>
+                        <i class="fas fa-search text-gray-300 text-sm group-focus-within:text-primary transition-colors"></i>
+                    </div>
+                    <input type="text" id="product-search" placeholder="¿Qué se te antoja?" 
+                           class="w-full bg-white border-2 border-gray-100 rounded-2xl py-3.5 pl-14 pr-6 text-textMain font-bold text-base shadow-xl shadow-gray-200/40 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-gray-300">
+                </div>
+
+                <!-- Categories Filter Horizontal -->
+                <div class="relative">
+                    <div class="flex items-center gap-4 overflow-x-auto pb-4 px-2 scrollbar-hide -mx-2 scroll-smooth" id="categories-scroller">
+                        <!-- Botón TODO -->
+                        <button class="category-filter-btn flex flex-col items-center gap-2 shrink-0 group active" data-category="all">
+                            <div class="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-primary group-hover:text-white group-[.active]:bg-primary group-[.active]:text-white shadow-lg shadow-transparent group-[.active]:shadow-primary/20 transition-all duration-300 border-2 border-transparent group-[.active]:border-white">
+                                <i class="fas fa-border-all text-xl"></i>
+                            </div>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 group-[.active]:text-primary transition-all">Todo</span>
+                        </button>
+
+                        @foreach($categories as $category)
+                        <button class="category-filter-btn flex flex-col items-center gap-2 shrink-0 group" data-category="cat-{{ $category->id }}">
+                            <div class="w-14 h-14 rounded-2xl bg-white border-2 border-gray-50 flex items-center justify-center text-gray-400 group-hover:text-white group-[.active]:text-white shadow-lg shadow-transparent group-[.active]:shadow-primary/20 transition-all duration-300 group-hover:scale-105 active:scale-95"
+                                 style="--cat-color: {{ $category->color }}"
+                                 onmouseover="this.style.backgroundColor='{{ $category->color }}'; this.style.borderColor='{{ $category->color }}'"
+                                 onmouseout="if(!this.closest('.group').classList.contains('active')){ this.style.backgroundColor='white'; this.style.borderColor='#f9fafb' }">
+                                <i class="{{ $category->icon ?: 'fas fa-utensils' }} text-xl transition-transform group-hover:rotate-12"></i>
+                            </div>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-textMain group-[.active]:text-primary transition-all">{{ $category->name }}</span>
+                        </button>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -621,7 +679,7 @@
             <!-- Dynamic Menu Section -->
             @foreach($categories as $category)
             @if($category->products->count() > 0)
-            <div class="mb-20">
+            <div class="mb-20 category-section" id="cat-{{ $category->id }}">
                 <div class="flex items-center gap-4 mb-10 reveal">
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg" style="background-color: {{ $category->color }}">
                         <i class="{{ $category->icon ?: 'fas fa-utensils' }} text-xl"></i>
@@ -632,7 +690,7 @@
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-6">
                     @foreach($category->products as $product)
-                    <div class="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 food-card reveal">
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 food-card reveal" data-title="{{ strtolower($product->title) }}">
                         <div class="relative h-28 sm:h-36 lg:h-40 overflow-hidden bg-gray-100">
                             @if(str_contains(strtolower($category->name), 'especial'))
                                 <div class="absolute top-4 left-4 z-10 bg-gradient-to-r from-accent to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
@@ -867,7 +925,7 @@
     <script src="/js/jquery.min.js"></script>
     <script>
         // Audio Helper for "Pop" sound
-        let audioCtx;
+        var audioCtx;
         function playPopSound() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -875,8 +933,8 @@
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+            var oscillator = audioCtx.createOscillator();
+            var gainNode = audioCtx.createGain();
 
             oscillator.type = 'sine';
             oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
@@ -901,8 +959,8 @@
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+            var oscillator = audioCtx.createOscillator();
+            var gainNode = audioCtx.createGain();
 
             oscillator.type = 'triangle';
             oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
@@ -921,12 +979,12 @@
 
         $(document).ready(function () {
             // Logica para mostrar splash SOLO en modo APP instalada
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
             
             function hideSplash() {
                 setTimeout(function() {
                     $('#pwa-splash').addClass('opacity-0 pointer-events-none');
-                    setTimeout(() => $('#pwa-splash').addClass('hidden'), 600);
+                    setTimeout(function() { $('#pwa-splash').addClass('hidden'); }, 600);
                 }, 1500);
             }
 
@@ -945,21 +1003,22 @@
             // Delivery Global State
             var orderConfig = { type: 'pickup', distance: 0, deliveryCost: 0, lat: null, lng: null, confirmed: false, clientName: '', clientPhone: '' };
             // Sucursales Logic (Dynamic from Database)
-            const APP_BRANCHES = @json($branches);
-            let SELECTED_BRANCH = JSON.parse(localStorage.getItem('selected_branch')) || null;
+            var APP_BRANCHES = @json($branches);
+            var SELECTED_BRANCH = JSON.parse(localStorage.getItem('selected_branch')) || null;
 
             // Global Brand Config for Fallback
-            const GLOBAL_CONFIG = {
+            var GLOBAL_CONFIG = {
                 appName: "{{ $appName }}",
                 address: "{{ $address }}",
                 mapsLink: "{{ $mapsLink }}",
+                logo: "{{ $logo }}",
                 lat: 10.2586, 
                 lng: -67.5856
             };
 
             var STORE_LAT = SELECTED_BRANCH ? parseFloat(SELECTED_BRANCH.lat) : GLOBAL_CONFIG.lat;
             var STORE_LNG = SELECTED_BRANCH ? parseFloat(SELECTED_BRANCH.lng) : GLOBAL_CONFIG.lng;
-            const DELIVERY_RATE_PER_KM = 0.43;
+            var DELIVERY_RATE_PER_KM = 0.43;
             var deliveryMap = null;
             var deliveryMarker = null;
 
@@ -975,32 +1034,65 @@
                 return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
             }
 
+            var osrmTimeout = null;
             function updateDeliveryCost(lat, lng) {
-                var dist = getDistanceFromLatLonInKm(STORE_LAT, STORE_LNG, lat, lng);
-                var cost = dist * DELIVERY_RATE_PER_KM;
+                // Actualización inmediata estimada (Haversine * 1.35) para respuesta rápida en UI
+                var straightDist = getDistanceFromLatLonInKm(STORE_LAT, STORE_LNG, lat, lng);
+                var estDist = straightDist * 1.35;
+                renderDistAndCost(estDist, lat, lng);
 
+                // Consulta de ruta real por calles (OSRM) + Geocodificación Inversa con debounce
+                clearTimeout(osrmTimeout);
+                osrmTimeout = setTimeout(function() {
+                    // 1. Ruta Driving (OSRM)
+                    var osrmUrl = 'https://router.project-osrm.org/route/v1/driving/' + STORE_LNG + ',' + STORE_LAT + ';' + lng + ',' + lat + '?overview=false';
+                    fetch(osrmUrl)
+                        .then(function(res) { return res.json(); })
+                        .then(function(data) {
+                            if (data && data.routes && data.routes.length > 0) {
+                                var realDist = data.routes[0].distance / 1000;
+                                renderDistAndCost(realDist, lat, lng);
+                            }
+                        })
+                        .catch(function(err) { console.log("Routing Error:", err); });
+
+                    // 2. Dirección Texto (Reverse Geocoding)
+                    fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1')
+                        .then(function(res) { return res.json(); })
+                        .then(function(data) {
+                            if (data && data.display_name) {
+                                $('#delivery-address-manual').val(data.display_name);
+                            }
+                        })
+                        .catch(function() { 
+                            $('#delivery-address-manual').attr('placeholder', 'Escribe tu dirección aquí...');
+                        });
+                }, 600);
+            }
+
+            function renderDistAndCost(dist, lat, lng) {
+                var cost = dist * DELIVERY_RATE_PER_KM;
                 orderConfig.distance = dist;
                 orderConfig.deliveryCost = cost;
                 orderConfig.lat = lat;
                 orderConfig.lng = lng;
 
-                let bsCost = cost * bcvRate;
+                var bsCost = cost * bcvRate;
                 $('#delivery-distance').text(dist.toFixed(2));
-                $('#delivery-cost').html(`Bs. ${bsCost.toFixed(2)}<br><span class="text-xs text-gray-500 font-sans tracking-normal opacity-80">Ref: $${cost.toFixed(2)}</span>`);
+                $('#delivery-cost').html('Bs. ' + bsCost.toFixed(2) + '<br><span class="text-xs text-gray-500 font-sans tracking-normal opacity-80">Ref: $' + cost.toFixed(2) + '</span>');
 
                 var currentTotalStr = '';
                 if (cart.length > 0) {
-                    var baseTotal = cart.reduce((acc, current) => acc + (current.price * current.qty), 0);
+                    var baseTotal = cart.reduce(function(acc, current) { return acc + (current.price * current.qty); }, 0);
                     var finalTotal = baseTotal + cost;
-                    let bsFinalTotal = finalTotal * bcvRate;
-                    currentTotalStr = `- Total Orden: Bs. ${bsFinalTotal.toFixed(2)}`;
+                    var bsFinalTotal = finalTotal * bcvRate;
+                    currentTotalStr = '- Total Orden: Bs. ' + bsFinalTotal.toFixed(2);
                 }
                 $('#delivery-total-btn').text(currentTotalStr);
 
-                // Ocultar advertencia al mover el marcador si el costo sube
                 if (cost >= 0.20) {
                     $('#delivery-warning-box').addClass('hidden');
-                    const btn = $('#btn-confirm-delivery');
+                    var btn = $('#btn-confirm-delivery');
                     if (btn.hasClass('bg-red-500')) {
                         btn.removeClass('bg-red-500').addClass('bg-orange-500').html('Confirmar <span id="delivery-total-btn" class="ml-1 text-orange-100 font-normal"></span> <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>');
                         $('#delivery-total-btn').text(currentTotalStr);
@@ -1017,9 +1109,9 @@
                     return;
                 }
 
-                if (!SELECTED_BRANCH || !APP_BRANCHES.find(b => b.id == SELECTED_BRANCH.id)) {
+                if (!SELECTED_BRANCH || !APP_BRANCHES.find(function(b) { return b.id == SELECTED_BRANCH.id; })) {
                     $('#branch-selector-modal').removeClass('hidden').addClass('flex');
-                    setTimeout(() => {
+                    setTimeout(function() {
                         $('#branch-selector-modal').find('.scale-95').removeClass('scale-95 opacity-0').addClass('scale-100 opacity-100');
                     }, 50);
                 } else {
@@ -1029,7 +1121,7 @@
 
             window.selectBranch = function(branchId) {
                 if (!branchId) return;
-                const branch = APP_BRANCHES.find(b => b.id == branchId);
+                var branch = APP_BRANCHES.find(function(b) { return b.id == branchId; });
                 if (branch) {
                     localStorage.setItem('selected_branch', JSON.stringify(branch));
                     SELECTED_BRANCH = branch;
@@ -1037,18 +1129,18 @@
                     STORE_LNG = parseFloat(branch.lng);
                     
                     $('#branch-selector-modal').addClass('opacity-0');
-                    setTimeout(() => {
+                    setTimeout(function() {
                         $('#branch-selector-modal').addClass('hidden').removeClass('flex opacity-0');
                         updateBranchUI();
                         // Al seleccionar sede, iniciamos el flujo de PWA
                         if (typeof window.initPWAFlow === 'function') {
                             window.initPWAFlow();
                         }
-                        if (window.deliveryMap) {
+                        if (deliveryMap) {
                             deliveryMap.setView([STORE_LAT, STORE_LNG], 13);
                             if (window.storeMarker) {
                                 storeMarker.setLatLng([STORE_LAT, STORE_LNG]);
-                                storeMarker.setPopupContent(`<b>${branch.name}</b>`);
+                                storeMarker.setPopupContent('<b>' + branch.name + '</b>');
                             }
                         }
                     }, 300);
@@ -1057,17 +1149,17 @@
 
             function updateBranchUI() {
                 if (SELECTED_BRANCH) {
-                    $('#branch-banner-text').text(`${SELECTED_BRANCH.name}`);
-                    $('#branch-banner-link').attr('href', `https://www.google.com/maps?q=${SELECTED_BRANCH.lat},${SELECTED_BRANCH.lng}`);
+                    $('#branch-banner-text').html(SELECTED_BRANCH.name);
+                    $('#branch-banner-link').attr('href', 'https://www.google.com/maps?q=' + SELECTED_BRANCH.lat + ',' + SELECTED_BRANCH.lng);
                     
-                    $('#footer-address-text').text(`${SELECTED_BRANCH.address}`);
-                    $('#footer-address-link').attr('href', `https://www.google.com/maps?q=${SELECTED_BRANCH.lat},${SELECTED_BRANCH.lng}`);
+                    $('#footer-address-text').html(SELECTED_BRANCH.address);
+                    $('#footer-address-link').attr('href', 'https://www.google.com/maps?q=' + SELECTED_BRANCH.lat + ',' + SELECTED_BRANCH.lng);
                 } else {
                     // Fallback to Brand Identity module
-                    $('#branch-banner-text').text(`${GLOBAL_CONFIG.appName}`);
+                    $('#branch-banner-text').html(GLOBAL_CONFIG.appName);
                     $('#branch-banner-link').attr('href', GLOBAL_CONFIG.mapsLink);
 
-                    $('#footer-address-text').text(`${GLOBAL_CONFIG.address}`);
+                    $('#footer-address-text').html(GLOBAL_CONFIG.address);
                     $('#footer-address-link').attr('href', GLOBAL_CONFIG.mapsLink);
                 }
             }
@@ -1099,17 +1191,17 @@
                     title: 'Detectando ubicación...',
                     text: 'Por favor, permite el acceso al GPS de tu dispositivo.',
                     allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
+                    didOpen: function() { Swal.showLoading(); }
                 });
 
-                navigator.geolocation.getCurrentPosition(position => {
-                    const userLat = position.coords.latitude;
-                    const userLng = position.coords.longitude;
-                    let nearest = null;
-                    let minDistance = Infinity;
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var userLat = position.coords.latitude;
+                    var userLng = position.coords.longitude;
+                    var nearest = null;
+                    var minDistance = Infinity;
 
-                    APP_BRANCHES.forEach(branch => {
-                        const dist = getDistanceFromLatLonInKm(userLat, userLng, branch.lat, branch.lng);
+                    APP_BRANCHES.forEach(function(branch) {
+                        var dist = getDistanceFromLatLonInKm(userLat, userLng, branch.lat, branch.lng);
                         if (dist < minDistance) {
                             minDistance = dist;
                             nearest = branch;
@@ -1118,16 +1210,16 @@
 
                     if (nearest) {
                         Swal.fire({
-                            title: `Sede detectada`,
-                            text: `Hemos encontrado que la sede de "${nearest.name}" es la más cercana a ti.`,
+                            title: 'Sede detectada',
+                            text: 'Hemos encontrado que la sede de "' + nearest.name + '" es la más cercana a ti.',
                             icon: "success",
                             timer: 2000,
                             showConfirmButton: false
                         });
                         selectBranch(nearest.id);
                     }
-                }, error => {
-                    let errorMsg = "No pudimos acceder a tu ubicación. Por favor, asegúrate de tener el GPS encendido y haber dado permisos.";
+                }, function(error) {
+                    var errorMsg = "No pudimos acceder a tu ubicación. Por favor, asegúrate de tener el GPS encendido y haber dado permisos.";
                     if (error.code === 1) errorMsg = "Has denegado el acceso a tu ubicación. Por favor, actívala en la configuración de tu navegador o selecciona manualmente.";
                     
                     Swal.fire({ 
@@ -1158,20 +1250,19 @@
             function initLeafletMap() {
                 if (deliveryMap) return;
                 // Maracay center
-                deliveryMap = L.map('delivery-map').setView([STORE_LAT, STORE_LNG], 13);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(deliveryMap);
+                deliveryMap = L.map('delivery-map', { attributionControl: false }).setView([STORE_LAT, STORE_LNG], 13);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(deliveryMap);
 
                 // Icono tienda
+                var currentLogo = SELECTED_BRANCH && SELECTED_BRANCH.logo ? SELECTED_BRANCH.logo : GLOBAL_CONFIG.logo;
                 var storeIcon = L.divIcon({
-                    html: `<div class="w-8 h-8 bg-white border-2 border-primary rounded-full shadow-lg flex items-center justify-center p-1"><img src="{{ $logo ? asset('storage/' . $logo) : '/images/brand/logo.png' }}" class="w-full h-full object-cover"></div>`,
+                    html: '<div class="w-8 h-8 bg-white border-2 border-primary rounded-full shadow-lg flex items-center justify-center p-1"><img src="' + (currentLogo ? '/storage/' + currentLogo : '/images/brand/logo.png') + '" class="w-full h-full object-cover"></div>',
                     className: 'store-marker-icon',
                     iconSize: [32, 32],
                     iconAnchor: [16, 16]
                 });
-                const branchName = SELECTED_BRANCH ? SELECTED_BRANCH.name : "{{ $appName }}";
-                window.storeMarker = L.marker([STORE_LAT, STORE_LNG], { icon: storeIcon }).addTo(deliveryMap).bindPopup(`<b>${branchName}</b>`).openPopup();
+                var branchNameForMarker = SELECTED_BRANCH ? SELECTED_BRANCH.name : GLOBAL_CONFIG.appName;
+                window.storeMarker = L.marker([STORE_LAT, STORE_LNG], { icon: storeIcon }).addTo(deliveryMap).bindPopup('<b>' + branchNameForMarker + '</b>').openPopup();
 
                 // Icono cliente
                 var clientIcon = L.divIcon({
@@ -1190,6 +1281,48 @@
                     deliveryMarker.setLatLng(e.latlng);
                     updateDeliveryCost(e.latlng.lat, e.latlng.lng);
                 });
+
+                // --- MAP SEARCH & GPS ---
+                $('#btn-use-gps').click(function() {
+                    var $btn = $(this);
+                    var $icon = $btn.find('i');
+                    var originalHtml = $btn.html();
+                    
+                    $btn.addClass('opacity-50 pointer-events-none');
+                    $icon.addClass('fa-spin-pulse');
+
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            var lat = position.coords.latitude;
+                            var lng = position.coords.longitude;
+                            
+                            if (deliveryMap) {
+                                deliveryMap.setView([lat, lng], 16);
+                                if (deliveryMarker) {
+                                    deliveryMarker.setLatLng([lat, lng]);
+                                }
+                                updateDeliveryCost(lat, lng);
+                            }
+                            
+                            $btn.removeClass('opacity-50 pointer-events-none').html(originalHtml);
+                            Swal.fire({ 
+                                title: "¡Ubicación Detectada!", 
+                                text: "Hemos ajustado el marcador a tu posición actual.", 
+                                icon: "success", 
+                                timer: 2000, 
+                                showConfirmButton: false 
+                            });
+                        }, function(error) {
+                            $btn.removeClass('opacity-50 pointer-events-none').html(originalHtml);
+                            var errorMsg = "No pudimos obtener tu ubicación.";
+                            if (error.code === 1) errorMsg = "Has denegado el acceso al GPS. Por favor, actívalo en la configuración de tu navegador.";
+                            Swal.fire({ title: "GPS No Disponible", text: errorMsg, icon: "info" });
+                        }, { enableHighAccuracy: true, timeout: 8000 });
+                    } else {
+                        $btn.removeClass('opacity-50 pointer-events-none').html(originalHtml);
+                        Swal.fire({ title: "GPS No Soportado", text: "Tu navegador no soporta geolocalización.", icon: "error" });
+                    }
+                });
             }
 
             console.log(
@@ -1203,40 +1336,39 @@
             checkBranchSelection();
 
             // Tasa BCV Logic
-            let bcvRate = 1.0;
-            let isBcvLoaded = false;
+            var bcvRate = 1.0;
+            var isBcvLoaded = false;
 
-            async function fetchBcvRate() {
-                try {
-                    // Usando DolarApi.com que es más confiable y libre de CORS
-                    const response = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
-                    const data = await response.json();
-
-                    if (data && data.promedio) {
-                        bcvRate = data.promedio;
-                        isBcvLoaded = true;
-
-                        $('#bcv-rate-navbar .rate-val').text(`Bs. ${bcvRate.toFixed(2)}`);
-                        if (data.fechaActualizacion) {
-                            let dateObj = new Date(data.fechaActualizacion);
-                            $('#bcv-date').text('Actualizado: ' + dateObj.toLocaleString('es-VE', { dateStyle: 'short', timeStyle: 'short' }));
+            function fetchBcvRate() {
+                fetch('https://ve.dolarapi.com/v1/dolares/oficial')
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        if (data && data.promedio) {
+                            bcvRate = data.promedio;
+                            isBcvLoaded = true;
+                            $('.rate-val').text('Bs. ' + bcvRate.toFixed(2));
+                            if (data.fechaActualizacion) {
+                                var dateObj = new Date(data.fechaActualizacion);
+                                $('#bcv-date').text('Actualizado: ' + dateObj.toLocaleString('es-VE', { dateStyle: 'short', timeStyle: 'short' }));
+                            }
+                        } else {
+                            throw new Error("Formato inválido");
                         }
-                    } else {
-                        throw new Error("Formato de datos no válido");
-                    }
-                } catch (error) {
-                    bcvRate = 50.00; // Tasa de respaldo manual
-                    $('#bcv-rate-navbar .rate-val').text(`Bs. ${bcvRate.toFixed(2)} (Ref)`);
-                    $('#bcv-date').text('Tasa Referencial Manual');
-                }
-
-                // Actualizar precios en pantalla
-                $('.price-display').each(function () {
-                    let usdPrice = parseFloat($(this).data('dolar'));
-                    let bsPrice = usdPrice * bcvRate;
-                    $(this).text(`Bs. ${bsPrice.toFixed(2)}`);
-                });
-                updateCartUI(); // Reset visual totals according to new rate
+                    })
+                    .catch(function(error) {
+                        bcvRate = 50.00;
+                        $('.rate-val').text('Bs. ' + bcvRate.toFixed(2) + ' (Ref)');
+                        $('#bcv-date').text('Tasa Referencial Manual');
+                    })
+                    .finally(function() {
+                        // Actualizar precios en pantalla
+                        $('.price-display').each(function () {
+                            var usdPrice = parseFloat($(this).data('dolar'));
+                            var bsPrice = usdPrice * bcvRate;
+                            $(this).text('Bs. ' + bsPrice.toFixed(2));
+                        });
+                        updateCartUI();
+                    });
             }
 
             fetchBcvRate();
@@ -1281,6 +1413,74 @@
                 });
             });
 
+            // Search and Category Filter Logic
+            var productSearch = $('#product-search');
+            var categoryBtns = $('.category-filter-btn');
+            var categorySections = $('.category-section');
+
+            function filterProducts() {
+                var query = productSearch.val().trim().toLowerCase();
+                var activeCategory = $('.category-filter-btn.active').data('category');
+
+                categorySections.each(function() {
+                    var section = $(this);
+                    var sectionId = section.attr('id');
+                    
+                    // Primero ocultamos si la categoría no coincide con la seleccionada
+                    if (activeCategory !== 'all' && activeCategory !== sectionId) {
+                        section.addClass('hidden');
+                        return;
+                    }
+
+                    // Dentro de la categoría permitida, filtramos los productos por búsqueda
+                    var hasVisibleProductsInSection = false;
+                    section.find('.food-card').each(function() {
+                        var card = $(this);
+                        var title = card.data('title') || "";
+                        var matchesQuery = query === "" || title.includes(query);
+
+                        if (matchesQuery) {
+                            card.removeClass('hidden').addClass('reveal active');
+                            hasVisibleProductsInSection = true;
+                        } else {
+                            card.addClass('hidden');
+                        }
+                    });
+
+                    // Mostramos u ocultamos la sección completa según si hay productos visibles
+                    if (hasVisibleProductsInSection) {
+                        section.removeClass('hidden');
+                    } else {
+                        section.addClass('hidden');
+                    }
+                });
+
+                // Mensaje de "No se encontró nada"
+                if ($('.category-section:not(.hidden)').length === 0) {
+                    if ($('#no-results-msg').length === 0) {
+                        $('#menu .max-w-7xl').append(
+                            '<div id="no-results-msg" class="text-center py-20 reveal active">' +
+                                '<div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-200 text-3xl mx-auto mb-6">' +
+                                    '<i class="fas fa-search"></i>' +
+                                '</div>' +
+                                '<h3 class="text-xl font-display text-textMain mb-2">No encontramos resultados</h3>' +
+                                '<p class="text-gray-400 text-sm">Prueba buscando otro ingrediente o cambia de categoría.</p>' +
+                            '</div>'
+                        );
+                    }
+                } else {
+                    $('#no-results-msg').remove();
+                }
+            }
+
+            productSearch.on('input', filterProducts);
+
+            categoryBtns.on('click', function() {
+                categoryBtns.removeClass('active');
+                $(this).addClass('active');
+                filterProducts();
+            });
+
             // Initial trigger for reveal elements currently in view
             setTimeout(function () {
                 $(window).trigger('scroll');
@@ -1316,88 +1516,272 @@
             // Visual Cart Logic & Functionality
             var cart = [];
 
+            $('.add-to-cart-btn').click(function () {
+                var qtyInputId = $(this).data('qty');
+                var qty = parseInt($('#' + qtyInputId).val());
+                var name = $(this).data('name');
+                var price = parseFloat($(this).data('price'));
+
+                var existingItem = null;
+                for (var i = 0; i < cart.length; i++) {
+                    if (cart[i].name === name) {
+                        existingItem = cart[i];
+                        break;
+                    }
+                }
+
+                if (existingItem) {
+                    existingItem.qty += qty;
+                } else {
+                    cart.push({ name: name, price: price, qty: qty });
+                }
+
+                playPopSound();
+                if (typeof confetti === 'function') {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        colors: ['#00A859', '#FFBF69', '#E71D36']
+                    });
+                }
+
+                updateCartUI();
+                
+                // Opción visual de feedback en el botón
+                var $btn = $(this);
+                var originalText = $btn.text();
+                $btn.addClass('bg-green-700').text('¡Agregado!');
+                setTimeout(function () {
+                    $btn.removeClass('bg-green-700').text(originalText);
+                    $('#' + qtyInputId).val(1);
+                }, 1000);
+            });
+
+            // --- CHECKOUT NAVIGATION LOGIC ---
+            var currentCheckoutStep = 1;
+            var checkoutModal = $('#checkout-modal');
+            var stepDots = $('.checkout-step-dot');
+
+            function goToCheckoutStep(step) {
+                if (step < 1 || step > 4) return;
+                
+                // Play subtle transition sound
+                playPopSound();
+
+                // Fade out current screen
+                $('.checkout-screen:not(.hidden)').fadeOut(200, function() {
+                    $(this).addClass('hidden');
+                    currentCheckoutStep = step;
+                    
+                    // Update Stepper UI
+                    stepDots.each(function() {
+                        var d = $(this);
+                        var dotStep = d.data('step');
+                        var label = d.next('span');
+                        
+                        if (dotStep < step) {
+                            d.removeClass('bg-gray-200 ring-4 ring-primary/10 shadow-lg').addClass('bg-primary');
+                            label.removeClass('text-gray-400').addClass('text-primary');
+                        } else if (dotStep === step) {
+                            d.removeClass('bg-gray-200 bg-primary').addClass('bg-primary ring-4 ring-primary/10 shadow-lg');
+                            label.removeClass('text-gray-400').addClass('text-primary');
+                        } else {
+                            d.removeClass('bg-primary ring-4 ring-primary/10 shadow-lg').addClass('bg-gray-200');
+                            label.removeClass('text-primary').addClass('text-gray-400');
+                        }
+                    });
+
+                    // Show and fade in new screen
+                    var nextScreen = $('#checkout-step-' + step);
+                    nextScreen.removeClass('hidden').hide().fadeIn(300);
+                    
+                    // Dynamic Logic depending on step
+                    if (step === 3) {
+                        if (orderConfig.type === 'delivery') {
+                            $('#view-delivery-input').removeClass('hidden');
+                            $('#view-pickup-info').addClass('hidden');
+                            initLeafletMap();
+                            setTimeout(function() { if(window.deliveryMap) deliveryMap.invalidateSize(); }, 400);
+                        } else {
+                            $('#view-delivery-input').addClass('hidden');
+                            $('#view-pickup-info').removeClass('hidden');
+                        }
+                    } else if (step === 4) {
+                        renderOrderSummary();
+                    }
+                });
+            }
+
+            function openCheckout() {
+                if (cart.length === 0) return;
+
+                if (!isStoreOpen) {
+                    Swal.fire({
+                        title: '¡Sede Cerrada!',
+                        text: 'Nuestro horario es: {{ $schedule }}. ¿Deseas continuar en modo prueba?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Probar Pedido',
+                        cancelButtonText: 'Entendido'
+                    }).then(function(result) {
+                        if (result.isConfirmed) {
+                            isStoreOpen = true;
+                            openCheckout();
+                        }
+                    });
+                    return;
+                }
+
+                currentCheckoutStep = 1;
+                $('.checkout-screen').addClass('hidden');
+                $('#checkout-step-1').removeClass('hidden');
+                
+                // Reset dots
+                stepDots.removeClass('bg-primary ring-4 ring-primary/10 shadow-lg').addClass('bg-gray-200');
+                stepDots.first().addClass('bg-primary ring-4 ring-primary/10');
+                $('.checkout-step-dot + span').removeClass('text-primary').addClass('text-gray-400');
+                stepDots.first().next('span').addClass('text-primary');
+
+                checkoutModal.removeClass('hidden').hide().fadeIn(400);
+                updateCartUI();
+            }
+
+            function closeCheckout() {
+                checkoutModal.fadeOut(300, function() {
+                    $(this).addClass('hidden');
+                });
+            }
+
+            // --- CART UI UPDATE ---
             function updateCartUI() {
                 var totalItems = 0;
                 var totalPrice = 0;
                 var html = '';
 
                 if (cart.length === 0) {
-                    $('#empty-cart-msg').removeClass('hidden');
-                    $('#cart-items .cart-item-row').remove();
+                    html = '<div class="text-center text-gray-300 py-10 font-medium">Tu carrito está vacío</div>';
                     $('#clear-cart-btn').addClass('hidden');
-                    // Ocultar sección de pagos al vaciar el carrito
-                    $('#pagos').addClass('hidden');
+                    $('#checkout-step-1 button#btn-next-to-type').prop('disabled', true).addClass('opacity-50');
                 } else {
-                    $('#empty-cart-msg').addClass('hidden');
                     $('#clear-cart-btn').removeClass('hidden');
+                    $('#checkout-step-1 button#btn-next-to-type').prop('disabled', false).removeClass('opacity-50');
+                    
                     cart.forEach(function (item, index) {
                         totalItems += item.qty;
                         totalPrice += (item.price * item.qty);
-                        let bsRowPrice = (item.price * bcvRate).toFixed(2);
-                        let bsRowTotal = (item.price * item.qty * bcvRate).toFixed(2);
-                        html += `
-                            <div class="cart-item-row flex justify-between items-center border-b border-gray-50 pb-3 mt-2 relative overflow-hidden">
-                                <div class="flex-grow pr-3">
-                                    <p class="font-bold text-textMain text-sm line-clamp-1">${item.name}</p>
-                                    <div class="flex items-center gap-2 mt-2 font-sans">
-                                        <div class="flex items-center bg-gray-50 rounded-lg overflow-hidden border border-gray-200 shadow-sm transition-all hover:border-gray-300">
-                                            <button class="px-3.5 py-1 text-sm font-bold hover:bg-gray-100 transition-colors cart-qty-minus text-accent" data-index="${index}">-</button>
-                                            <span class="px-3 py-1 text-xs font-bold border-x border-gray-200 min-w-[34px] text-center bg-white text-textMain">${item.qty}</span>
-                                            <button class="px-3.5 py-1 text-sm font-bold hover:bg-gray-100 transition-colors cart-qty-plus text-primary" data-index="${index}">+</button>
-                                        </div>
-                                        <p class="text-[10px] text-gray-400 font-medium">x Bs. ${bsRowPrice}</p>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col items-end justify-center min-w-[100px]">
-                                    <p class="font-sans font-bold text-primary text-[15px] leading-tight text-right italic">Bs. ${bsRowTotal}</p>
-                                    <button class="text-[10px] text-red-500 hover:text-red-700 delete-item flex items-center justify-end gap-1 mt-1 font-bold transition-all hover:scale-105 active:scale-95" data-index="${index}"><i class="fas fa-trash-alt text-[9px]"></i> Eliminar</button>
-                                </div>
-                            </div>
-                        `;
+                        var bsPrice = (item.price * bcvRate).toFixed(2);
+                        var bsTotal = (item.price * item.qty * bcvRate).toFixed(2);
+                        
+                        html += '<div class="cart-item-row group bg-gray-50/50 hover:bg-white border border-gray-100 p-4 rounded-3xl transition-all duration-300">' +
+                                '<div class="flex justify-between items-start gap-4">' +
+                                    '<div class="flex-grow">' +
+                                        '<h5 class="font-bold text-textMain text-sm mb-2">' + item.name + '</h5>' +
+                                        '<div class="flex items-center gap-3">' +
+                                            '<div class="flex items-center bg-white rounded-xl border border-gray-100 p-1 shadow-sm">' +
+                                                '<button class="w-8 h-8 rounded-lg hover:bg-red-50 text-red-500 transition cart-qty-minus" data-index="' + index + '">-</button>' +
+                                                '<span class="w-10 text-center font-black text-xs">' + item.qty + '</span>' +
+                                                '<button class="w-8 h-8 rounded-lg hover:bg-green-50 text-primary transition cart-qty-plus" data-index="' + index + '">+</button>' +
+                                            '</div>' +
+                                            '<span class="text-[10px] text-gray-400 font-bold">Bs. ' + bsPrice + ' c/u</span>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<div class="text-right">' +
+                                        '<p class="font-display text-lg text-primary leading-none">Bs. ' + bsTotal + '</p>' +
+                                        '<button class="text-[9px] text-red-400 font-black uppercase tracking-widest mt-2 hover:text-red-600 delete-item transition" data-index="' + index + '">Eliminar</button>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>';
                     });
-
-                    // Add Delivery Row if active
-                    if (orderConfig.type === 'delivery' && orderConfig.deliveryCost >= 0) {
-                        totalPrice += orderConfig.deliveryCost;
-                        let bsDelPrice = (orderConfig.deliveryCost * bcvRate).toFixed(2);
-                        html += `
-                            <div class="cart-item-row flex justify-between items-center border-t border-b border-orange-100 bg-orange-50/50 pb-3 pt-3 px-2 rounded-lg mt-2 relative">
-                                <div>
-                                    <p class="font-bold text-orange-600 text-sm"><i class="fas fa-motorcycle mr-1"></i>Envío a Domicilio</p>
-                                    <p class="text-[11px] text-gray-500 mt-1">${orderConfig.distance.toFixed(1)} km a $0.43/km</p>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="font-bold text-orange-600">Bs. ${bsDelPrice}</span>
-                                    <button class="text-orange-300 hover:text-orange-500 delete-delivery"><i class="fas fa-times"></i></button>
-                                </div>
-                            </div>
-                        `;
-                    }
-
-                    $('#cart-items .cart-item-row').remove();
-                    $('#cart-items').append(html);
                 }
 
-                let bsTotal = (totalPrice * bcvRate).toFixed(2);
-                $('#cart-total').html(`Bs. ${bsTotal}<br><span class="text-xs text-gray-400 mt-1 block">Ref: $${totalPrice.toFixed(2)}</span>`);
+                $('#cart-items').html(html);
 
-                // Actualizar sección de pago dinámicamente
-                $('#pago-total-bs').text(`Bs. ${bsTotal}`);
-                $('#btn-copy-monto').attr('data-copy', bsTotal);
-                var copyText = `Pago Móvil {{ $appName }}\nBanco: Venezuela (0102)\nTel: 04161071344\nCI: V-12993940\nMonto: Bs. ${bsTotal}`;
-                $('#btn-copy-data').attr('data-copy', copyText);
-                $('#btn-copy-all-final').attr('data-copy', copyText);
+                var bsTotal = (totalPrice * bcvRate).toFixed(2);
+                $('#cart-total').text('Bs. ' + bsTotal);
+                $('#cart-total-usd').text('Ref: $' + totalPrice.toFixed(2));
 
-                var badge = $('#cart-badge');
-                badge.text(totalItems);
+                $('#cart-badge').text(totalItems);
                 if (totalItems > 0) {
-                    badge.removeClass('scale-0').addClass('scale-100');
+                    $('#cart-badge').removeClass('scale-0').addClass('scale-100');
                 } else {
-                    badge.removeClass('scale-100').addClass('scale-0');
-                    $('#cart-dropdown').removeClass('scale-100').addClass('scale-0');
+                    $('#cart-badge').removeClass('scale-100').addClass('scale-0');
+                    closeCheckout();
                 }
             }
-            // Logica para añadir/quitar cantidad directamente en el carro
+
+            function renderOrderSummary() {
+                var subtotalUSD = cart.reduce(function(acc, item) { return acc + (item.price * item.qty); }, 0);
+                var deliveryUSD = (orderConfig.type === 'delivery') ? orderConfig.deliveryCost : 0;
+                var totalUSD = subtotalUSD + deliveryUSD;
+
+                // Render Items for Summary
+                var itemsHtml = '';
+                for (var i = 0; i < cart.length; i++) {
+                    var item = cart[i];
+                    var itemTotalBs = (item.price * item.qty * bcvRate).toFixed(2);
+                    itemsHtml += '<div class="flex justify-between items-center text-sm">' +
+                                    '<span class="text-gray-400 font-bold">' + item.qty + 'x <span class="text-textMain">' + item.name + '</span></span>' +
+                                    '<span class="font-black text-primary">Bs. ' + itemTotalBs + '</span>' +
+                                 '</div>';
+                }
+                $('#summary-items').html(itemsHtml);
+
+                $('#summary-type').text(orderConfig.type === 'pickup' ? 'Retiro en Local' : 'Envío a Domicilio');
+                
+                if (orderConfig.type === 'delivery') {
+                    $('#summary-delivery-row').removeClass('hidden');
+                    $('#summary-delivery-cost').text('Bs. ' + (deliveryUSD * bcvRate).toFixed(2) + ' ($' + deliveryUSD.toFixed(2) + ')');
+                } else {
+                    $('#summary-delivery-row').addClass('hidden');
+                }
+
+                $('#summary-total-bs').text('Bs. ' + (totalUSD * bcvRate).toFixed(2));
+                $('#summary-total-usd').text('Ref: $' + totalUSD.toFixed(2));
+            }
+
+            // EVENT BINDINGS
+            $('#cart-toggle-btn').click(openCheckout);
+            $('#btn-checkout-close').click(closeCheckout);
+            $('#btn-checkout-back, .btn-step-back').click(function() {
+                if (currentCheckoutStep > 1) goToCheckoutStep(currentCheckoutStep - 1);
+                else closeCheckout();
+            });
+
+            $('#btn-next-to-type').click(function() { goToCheckoutStep(2); });
+            
+            $('#btn-select-pickup').click(function() {
+                orderConfig.type = 'pickup';
+                orderConfig.deliveryCost = 0;
+                orderConfig.distance = 0;
+                goToCheckoutStep(3);
+            });
+
+            $('#btn-select-delivery').click(function() {
+                orderConfig.type = 'delivery';
+                goToCheckoutStep(3);
+            });
+
+            $('#btn-confirm-pickup').click(function() { goToCheckoutStep(4); });
+
+            $('#btn-confirm-delivery').click(function() {
+                var cName = $('#delivery-name').val().trim();
+                var cPhone = $('#delivery-phone').val().trim();
+
+                if (!cName || !cPhone) {
+                    Swal.fire({ title: "Datos Incompletos", text: "Por favor, ingresa tu nombre y celular para coordinar el envío.", icon: "info" });
+                    return;
+                }
+
+                if (orderConfig.deliveryCost < 0.20) {
+                     // Warning already handled? Or just alert
+                }
+
+                orderConfig.clientName = cName;
+                orderConfig.clientPhone = cPhone;
+                goToCheckoutStep(4);
+            });
+
             $(document).on('click', '.cart-qty-plus', function () {
                 var index = $(this).data('index');
                 cart[index].qty++;
@@ -1411,400 +1795,68 @@
                     cart[index].qty--;
                     playPopSound();
                     updateCartUI();
-                } else {
-                    // Opcional: Si es 1, podrías gatillar el delete-item pero el usuario tiene el botón de eliminar.
                 }
             });
 
-            // Bind delete item dynamically
             $(document).on('click', '.delete-item', function (e) {
-                var btn = $(this);
-                var index = btn.data('index');
-                var row = btn.closest('.cart-item-row');
-
+                var index = $(this).data('index');
                 playDeleteSound();
-
-                // Animación de confeti rojo
-                var rect = btn[0].getBoundingClientRect();
-                var x = (rect.left + (rect.width / 2)) / window.innerWidth;
-                var y = (rect.top + (rect.height / 2)) / window.innerHeight;
-                confetti({
-                    particleCount: 20,
-                    spread: 50,
-                    origin: { x: x, y: y },
-                    colors: ['#E71D36', '#fb7185', '#ef4444'],
-                    zIndex: 100
-                });
-
-                // Animación de salida (fade out y desplazar)
-                row.css({
-                    'transition': 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    'opacity': '0',
-                    'transform': 'translateX(30px) scale(0.95)'
-                });
-
-                setTimeout(function () {
-                    cart.splice(index, 1);
-                    if (cart.length === 0) {
-                        orderConfig.type = 'pickup';
-                        orderConfig.deliveryCost = 0;
-                        orderConfig.distance = 0;
-                        orderConfig.confirmed = false;
-                        $('#cart-dropdown').removeClass('scale-100').addClass('scale-0');
-                    }
-                    updateCartUI();
-                }, 300);
-            });
-
-            // Bind delete delivery
-            $(document).on('click', '.delete-delivery', function (e) {
-                var row = $(this).closest('.cart-item-row');
-                playDeleteSound();
-                row.css({
-                    'transition': 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    'opacity': '0',
-                    'transform': 'translateX(30px) scale(0.95)'
-                });
-                setTimeout(function () {
-                    orderConfig.type = 'pickup';
-                    orderConfig.deliveryCost = 0;
-                    orderConfig.distance = 0;
-                    orderConfig.confirmed = false;
-                    updateCartUI();
-                }, 300);
-            });
-
-            // Bind clear cart
-            $('#clear-cart-btn').click(function (e) {
-                playDeleteSound();
-                var rect = $(this)[0].getBoundingClientRect();
-                var x = (rect.left + (rect.width / 2)) / window.innerWidth;
-                var y = (rect.top + (rect.height / 2)) / window.innerHeight;
-                confetti({
-                    particleCount: 40,
-                    spread: 80,
-                    origin: { x: x, y: y },
-                    colors: ['#E71D36', '#fb7185', '#ef4444'],
-                    zIndex: 100
-                });
-
-                setTimeout(function () {
-                    cart = [];
-                    orderConfig.type = 'pickup';
-                    orderConfig.deliveryCost = 0;
-                    orderConfig.distance = 0;
-                    orderConfig.confirmed = false;
-                    updateCartUI();
-                    $('#cart-dropdown').removeClass('scale-100').addClass('scale-0');
-                }, 200);
-            });
-
-            $('#cart-toggle-btn').click(function () {
-                if (cart.length > 0) {
-                    $('#cart-dropdown').toggleClass('scale-0 scale-100');
-                }
-            });
-
-            $('#close-cart-btn').click(function () {
-                $('#cart-dropdown').removeClass('scale-100').addClass('scale-0');
-            });
-
-            $('.add-to-cart-btn').click(function (e) {
-                var btn = $(this);
-                var qtyTarget = btn.data('qty');
-                var itemName = btn.data('name');
-                var itemPrice = parseFloat(btn.data('price'));
-                var qtyToAdd = parseInt($('#' + qtyTarget).val()) || 1;
-
-                // Play Audio
-                playPopSound();
-
-                // Show Confetti slightly above the clicked button
-                var rect = btn[0].getBoundingClientRect();
-                var x = (rect.left + (rect.width / 2)) / window.innerWidth;
-                var y = (rect.top + (rect.height / 2)) / window.innerHeight;
-
-                confetti({
-                    particleCount: 40,
-                    spread: 60,
-                    origin: { x: x, y: y },
-                    colors: ['#00A859', '#FFBF69', '#E71D36'],
-                    disableForReducedMotion: true,
-                    zIndex: 100
-                });
-
-                // Add class for animation feedback
-                btn.html('¡Listo!').addClass('bg-primary !text-white').removeClass('bg-primary bg-dark');
-
-                setTimeout(function () {
-                    var isDrink = btn.hasClass('bg-dark') || btn.data('qty').includes('papelon') || btn.data('qty').includes('malta') || btn.data('qty').includes('chicha');
-                    if (isDrink) {
-                        btn.html('Añadir').removeClass('bg-primary').addClass('bg-dark text-white');
-                    } else {
-                        btn.html('Añadir').removeClass('bg-primary').addClass('bg-primary text-white');
-                    }
-
-                    // Reset input
-                    $('#' + qtyTarget).val(1);
-                }, 1500);
-
-                // Add to array
-                var existingItemIndex = cart.findIndex(item => item.name === itemName);
-                if (existingItemIndex > -1) {
-                    cart[existingItemIndex].qty += qtyToAdd;
-                } else {
-                    cart.push({ name: itemName, price: itemPrice, qty: qtyToAdd });
-                }
-
+                cart.splice(index, 1);
                 updateCartUI();
-
-                var badge = $('#cart-badge');
-                // Bounce animation on the floating cart button
-                badge.parent().addClass('animate-bounce');
-                setTimeout(function () {
-                    badge.parent().removeClass('animate-bounce');
-                }, 1000);
             });
 
-            function showConfigModal(forceOpen) {
-                if (cart.length === 0) return;
-
-                if (!isStoreOpen) {
-                    $('#cart-dropdown').removeClass('scale-100').addClass('scale-0');
-                    $('#closed-store-modal').removeClass('hidden');
-                    setTimeout(function () {
-                        $('#closed-store-modal').removeClass('opacity-0').find('.scale-95').removeClass('scale-95').addClass('scale-100');
-                    }, 10);
-                    return;
-                }
-
-                if (orderConfig.confirmed && !forceOpen) {
-                    $('#cart-dropdown').removeClass('scale-100').addClass('scale-0');
-                    $('#availability-modal').removeClass('hidden');
-                    setTimeout(function () {
-                        $('#availability-modal').removeClass('opacity-0').find('.scale-95').removeClass('scale-95').addClass('scale-100');
-                    }, 10);
-                    return;
-                }
-
-                // Cerrar carrito
-                $('#cart-dropdown').removeClass('scale-100').addClass('scale-0');
-
-                // Mostrar Modal de Configuración
-                $('#config-order-modal').removeClass('hidden');
-                setTimeout(function () {
-                    $('#config-order-modal').removeClass('opacity-0').find('.scale-95').removeClass('scale-95').addClass('scale-100');
-                }, 10);
-            }
-
-            $('#btn-comprar').click(function () { showConfigModal(false); });
-            $('#btn-config-order').click(function () { showConfigModal(true); });
-
-            $('#btn-close-config-modal').click(function () {
-                var modal = $('#config-order-modal');
-                modal.addClass('opacity-0').find('.scale-100').removeClass('scale-100').addClass('scale-95');
-                setTimeout(() => {
-                    modal.addClass('hidden');
-                    $('#cart-dropdown').removeClass('scale-0').addClass('scale-100');
-                }, 300);
-            });
-
-            $('#btn-pickup').click(function () {
-                var configModal = $('#config-order-modal');
-                configModal.addClass('opacity-0').find('.scale-100').removeClass('scale-100').addClass('scale-95');
-                setTimeout(() => {
-                    configModal.addClass('hidden');
-
-                    orderConfig.type = 'pickup';
-                    orderConfig.confirmed = true;
-                    orderConfig.deliveryCost = 0;
-                    orderConfig.distance = 0;
-
-                    updateCartUI();
-                    $('#cart-dropdown').removeClass('scale-0').addClass('scale-100');
-                }, 300);
-            });
-
-            $('#btn-delivery').click(function () {
-                // Ocultar Config Modal, Mostrar Delivery Map
-                var configModal = $('#config-order-modal');
-                configModal.addClass('opacity-0').find('.scale-100').removeClass('scale-100').addClass('scale-95');
-                setTimeout(() => {
-                    configModal.addClass('hidden');
-                    $('#delivery-modal').removeClass('hidden');
-                    setTimeout(function () {
-                        $('#delivery-modal').removeClass('opacity-0').find('.scale-95').removeClass('scale-95').addClass('scale-100');
-                        initLeafletMap();
-                        // Forzar a leaflet a redibujar después de la animación para no ver tiles grisados
-                        setTimeout(() => deliveryMap.invalidateSize(), 300);
-                    }, 10);
-                }, 300);
-            });
-
-            // Lógicas del Mapa Modal
-            $('#btn-cancel-delivery').click(function () {
-                var domModal = $('#delivery-modal');
-                domModal.addClass('opacity-0').find('.scale-100').removeClass('scale-100').addClass('scale-95');
-                setTimeout(() => {
-                    domModal.addClass('hidden');
-                    $('#config-order-modal').removeClass('hidden');
-                    setTimeout(() => $('#config-order-modal').removeClass('opacity-0').find('.scale-95').removeClass('scale-95').addClass('scale-100'), 10);
-                }, 300);
-            });
-
-            $('#btn-confirm-delivery').click(function () {
-                // Validación de costo mínimo ($0.20)
-                if (orderConfig.deliveryCost < 0.20 && $('#delivery-warning-box').hasClass('hidden')) {
-                    $('#delivery-warning-box').removeClass('hidden');
-                    $(this).removeClass('bg-orange-500').addClass('bg-red-500').html('Confirmar de todas formas <i class="fas fa-check ml-2"></i>');
-
-                    // Efecto de vibración
-                    var btn = $(this);
-                    btn.addClass('animate-shake-attention');
-                    setTimeout(() => btn.removeClass('animate-shake-attention'), 500);
-                    return;
-                }
-
-                var cName = $('#delivery-name').val().trim();
-                var cPhone = $('#delivery-phone').val().trim();
-
-                if (!cName || !cPhone) {
-                    Swal.fire({ title: "{{ $appName }}", text: "Por favor, ingresa tu nombre y celular para coordinar el envío.", icon: "info" });
-                    return;
-                }
-
-                orderConfig.clientName = cName;
-                orderConfig.clientPhone = cPhone;
-                orderConfig.type = 'delivery';
-                orderConfig.confirmed = true;
-                var domModal = $('#delivery-modal');
-                domModal.addClass('opacity-0').find('.scale-100').removeClass('scale-100').addClass('scale-95');
-                setTimeout(() => {
-                    domModal.addClass('hidden');
-                    updateCartUI();
-
-                    showConfigModal(false);
-
-                    // Reset button style
-                    $('#btn-confirm-delivery').removeClass('bg-red-500').addClass('bg-orange-500').html('Confirmar <span id="delivery-total-btn" class="ml-1 text-orange-100 font-normal"></span> <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>');
-                }, 300);
-            });
-
-            $('#btn-search-location').click(function () {
-                var query = $('#delivery-search-input').val();
-                if (!query) return;
-                var $btn = $(this);
-                $btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
-
-                var searchQuery = query + ", Maracay, Aragua";
-                $.getJSON('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(searchQuery))
-                    .done(function (data) {
-                        if (data && data.length > 0) {
-                            var lat = parseFloat(data[0].lat);
-                            var lon = parseFloat(data[0].lon);
-                            deliveryMap.setView([lat, lon], 15);
-                            deliveryMarker.setLatLng([lat, lon]);
-                            updateDeliveryCost(lat, lon);
-                        } else {
-                            Swal.fire({ title: "ðŸ“ Lugar no encontrado", text: "BÃºscalo manualmente deslizando en el mapa.", icon: "warning" });
-                        }
-                    }).always(function () {
-                        $btn.html('<i class="fas fa-search"></i>').prop('disabled', false);
-                    });
-            });
-
-            $('#btn-gps-location').click(function () {
-                var $btn = $(this);
-                if ("geolocation" in navigator) {
-                    $btn.html('<i class="fas fa-spinner fa-spin"></i> Obteniendo satélites...');
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        var lat = position.coords.latitude;
-                        var lon = position.coords.longitude;
-                        deliveryMap.setView([lat, lon], 16);
-                        deliveryMarker.setLatLng([lat, lon]);
-                        updateDeliveryCost(lat, lon);
-                        $btn.html('<i class="fas fa-check text-green-500"></i> GPS Confirmado');
-                    }, function (error) {
-                        Swal.fire({ title: "ðŸ”Œ GPS Desconectado", text: "Activa el GPS o danos permiso para encontrarte rÃ¡pido.", icon: "warning" });
-                        $btn.html('<i class="fas fa-crosshairs"></i> Usar mi ubicación actual');
-                    }, { enableHighAccuracy: true });
-                } else {
-                    Swal.fire({ title: "ðŸš« Error GPS", text: "Tu navegador no permite obtener la ubicaciÃ³n automÃ¡tica.", icon: "error" });
-                }
-            });
-
-            $('#btn-cancel-modal').click(function () {
-                $('#availability-modal').addClass('opacity-0').find('.scale-100').removeClass('scale-100').addClass('scale-95');
-                setTimeout(function () {
-                    $('#availability-modal').addClass('hidden');
-                }, 300);
-            });
-
-            $('#btn-close-store-modal').click(function () {
-                $('#closed-store-modal').addClass('opacity-0').find('.scale-100').removeClass('scale-100').addClass('scale-95');
-                setTimeout(function () {
-                    $('#closed-store-modal').addClass('hidden');
-                }, 300);
-            });
-
-            $('#btn-test-continue').click(function () {
-                $('#closed-store-modal').addClass('opacity-0').find('.scale-100').removeClass('scale-100').addClass('scale-95');
-                setTimeout(function () {
-                    $('#closed-store-modal').addClass('hidden');
-                    isStoreOpen = true;
-                    showConfigModal(false);
-                }, 300);
+            $('#clear-cart-btn').click(function () {
+                playDeleteSound();
+                cart = [];
+                updateCartUI();
             });
 
             $('#btn-confirm-whatsapp').click(function () {
-                // Ocultar modal
-                $('#availability-modal').addClass('opacity-0').find('.scale-100').removeClass('scale-100').addClass('scale-95');
-                setTimeout(function () {
-                    $('#availability-modal').addClass('hidden');
-                }, 300);
+                // Close the full checkout modal
+                closeCheckout();
 
                 // Generar Mensaje de Orden directo (Estandar UTF-8 para WhatsApp)
-                const branchName = SELECTED_BRANCH ? SELECTED_BRANCH.name : "{{ $appName }}";
-                var orderMsg = `👋 ¡Hola, *${branchName}*!\n\n`;
+                var branchName = SELECTED_BRANCH ? SELECTED_BRANCH.name : "{{ $appName }}";
+                var orderMsg = "👋 ¡Hola, *" + branchName + "*!\n\n";
                 orderMsg += "📝 *¡NUEVO PEDIDO DESDE LA WEB!*:\n";
 
                 if (orderConfig.type === 'delivery') {
-                    orderMsg += `🚀 *TIPO DE ORDEN:* ENVÍO (DELIVERY)\n`;
-                    orderMsg += `👤 *Cliente:* ${orderConfig.clientName}\n`;
-                    orderMsg += `📞 *Celular:* ${orderConfig.clientPhone}\n`;
-                    orderMsg += `📍 *Ubicación:* https://www.google.com/maps?q=${orderConfig.lat},${orderConfig.lng}\n`;
-                    orderMsg += `🛵 *Distancia calculada:* ${orderConfig.distance.toFixed(1)} km\n`;
+                    orderMsg += "🚀 *TIPO DE ORDEN:* ENVÍO (DELIVERY)\n";
+                    orderMsg += "👤 *Cliente:* " + orderConfig.clientName + "\n";
+                    orderMsg += "📞 *Celular:* " + orderConfig.clientPhone + "\n";
+                    orderMsg += "📍 *Ubicación:* https://www.google.com/maps?q=" + orderConfig.lat + "," + orderConfig.lng + "\n";
+                    orderMsg += "🛵 *Distancia calculada:* " + orderConfig.distance.toFixed(1) + " km\n";
                 } else {
-                    orderMsg += `🏬 *TIPO DE ORDEN:* RETIRO EN LOCAL (PICKUP)\n`;
+                    orderMsg += "🏬 *TIPO DE ORDEN:* RETIRO EN LOCAL (PICKUP)\n";
                 }
 
                 orderMsg += "---------------------------------------\n";
                 var totalPriceUSD = 0;
                 cart.forEach(function (item) {
-                    let bsRowTotal = (item.price * item.qty * bcvRate).toFixed(2);
-                    orderMsg += `▸ ${item.qty}x ${item.name}\n      💵 Bs. ${bsRowTotal}  |  $${(item.price * item.qty).toFixed(2)}\n`;
+                    var bsRowTotal = (item.price * item.qty * bcvRate).toFixed(2);
+                    orderMsg += "▸ " + item.qty + "x " + item.name + "\n      💵 Bs. " + bsRowTotal + "  |  $" + (item.price * item.qty).toFixed(2) + "\n";
                     totalPriceUSD += (item.price * item.qty);
                 });
 
                 if (orderConfig.type === 'delivery') {
-                    let costBs = (orderConfig.deliveryCost * bcvRate).toFixed(2);
+                    var costBs = (orderConfig.deliveryCost * bcvRate).toFixed(2);
                     totalPriceUSD += orderConfig.deliveryCost;
-                    orderMsg += `\n🛵 *Servicio Delivery:* Bs. ${costBs} ($${orderConfig.deliveryCost.toFixed(2)})\n`;
+                    orderMsg += "\n🛵 *Servicio Delivery:* Bs. " + costBs + " ($" + orderConfig.deliveryCost.toFixed(2) + ")\n";
                 }
 
-                let bsTotalOrder = (totalPriceUSD * bcvRate).toFixed(2);
+                var bsTotalOrder = (totalPriceUSD * bcvRate).toFixed(2);
                 orderMsg += "---------------------------------------\n";
-                orderMsg += `💰 *TOTAL A PAGAR: Bs. ${bsTotalOrder}*\n`;
-                orderMsg += `💵 *(Ref: $${totalPriceUSD.toFixed(2)})*\n`;
-                orderMsg += `📊 _Tasa BCV del día: Bs. ${bcvRate.toFixed(2)}_\n\n`;
-                orderMsg += `✅ Envíame la disponibilidad para poder realizar el pago. ¡Quedo atento(a)!`;
+                orderMsg += "💰 *TOTAL A PAGAR: Bs. " + bsTotalOrder + "*\n";
+                orderMsg += "💵 *(Ref: $" + totalPriceUSD.toFixed(2) + ")*\n";
+                orderMsg += "📊 _Tasa BCV del día: Bs. " + bcvRate.toFixed(2) + "_\n\n";
+                orderMsg += "✅ Envíame la disponibilidad para poder realizar el pago. ¡Quedo atento(a)!";
 
-                let waNumber = SELECTED_BRANCH ? SELECTED_BRANCH.whatsapp : "{{ $whatsappNumber }}";
+                var waNumber = SELECTED_BRANCH ? SELECTED_BRANCH.whatsapp : "{{ $whatsappNumber }}";
                 waNumber = waNumber.replace(/\+/g, '').trim(); 
-                var waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(orderMsg)}`;
+                var waLink = "https://wa.me/" + waNumber + "?text=" + encodeURIComponent(orderMsg);
 
                 // Store formatted data for copy button
-                var copyText = `Pago Móvil {{ $appName }}\nBanco: Venezuela (0102)\nTel: 04161071344\nCI: V-12993940\nMonto: Bs. ${bsTotalOrder}`;
+                var copyText = 'Pago Móvil {{ $appName }}\nBanco: Venezuela (0102)\nTel: 04161071344\nCI: V-12993940\nMonto: Bs. ' + bsTotalOrder;
                 $('#btn-copy-data').attr('data-copy', copyText);
                 $('#btn-copy-monto').attr('data-copy', bsTotalOrder);
 
@@ -1817,7 +1869,7 @@
                 window.open(waLink, '_blank');
 
                 // Inject values into Payment Section
-                $('#pago-total-bs').text(`Bs. ${bsTotalOrder}`);
+                $('#pago-total-bs').text('Bs. ' + bsTotalOrder);
 
                 // Mostrar pagos
                 $('#pagos').removeClass('hidden');
@@ -1899,7 +1951,7 @@
             });
 
             $('#btn-completar-pedido').click(function () {
-                let waNumber = SELECTED_BRANCH ? SELECTED_BRANCH.whatsapp : "{{ $whatsappNumber }}";
+                var waNumber = SELECTED_BRANCH ? SELECTED_BRANCH.whatsapp : "{{ $whatsappNumber }}";
                 waNumber = waNumber.replace(/\+/g, '').trim();
                 var branchName = SELECTED_BRANCH ? SELECTED_BRANCH.name : "{{ $appName }}";
                 var compMsg = `¡Listo! Ya realicé el pago de mi pedido para la sede *${branchName}*. Te mando la imagen del comprobante por acá 📸.`;
@@ -1926,7 +1978,7 @@
                 if (Notification.permission === "granted") {
                     sendTestNotification();
                 } else if (Notification.permission !== "denied") {
-                    Notification.requestPermission().then(permission => {
+                    Notification.requestPermission().then(function(permission) {
                         if (permission === "granted") sendTestNotification();
                     });
                 } else {
@@ -1935,31 +1987,56 @@
             });
 
             function sendTestNotification() {
-                const title = "¡Es hora de {{ $appName }}! 🥟";
-                const options = {
+                var title = "¡Es hora de {{ $appName }}! 🥟";
+                var options = {
                     body: "{{ $notificationMsg }}",
-                    icon: "/images/brand/logo-solid.png",
-                    image: "/images/brand/logo-solid.png",
-                    badge: "/images/brand/logo-solid.png",
+                    icon: "{{ $logo ? asset('storage/' . $logo) : '/images/brand/logo.png' }}",
+                    image: "{{ $logo ? asset('storage/' . $logo) : '/images/brand/logo.png' }}",
+                    badge: "{{ $logo ? asset('storage/' . $logo) : '/images/brand/logo.png' }}",
                     vibrate: [200, 100, 200],
                     tag: 'test-notification',
                     renotify: true
                 };
 
                 if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.ready.then(registration => {
+                    navigator.serviceWorker.ready.then(function(registration) {
                         registration.showNotification(title, options);
                     });
                 } else {
                     // Fallback for desktop or non-SW env
                     try {
-                        const n = new Notification(title, options);
-                        n.onclick = () => { window.focus(); n.close(); };
+                        var n = new Notification(title, options);
+                        n.onclick = function() { window.focus(); n.close(); };
                     } catch (e) {
                         console.error("Error enviando notificación:", e);
                     }
                 }
             }
+
+            window.showGoogleLoginAlert = function() {
+                Swal.fire({
+                    title: '¡Hola! 👋',
+                    text: 'Inicia sesión con Google para llevar el historial de tus pedidos y pedir tus empanadas favoritas más rápido.',
+                    imageUrl: 'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
+                    imageWidth: 60,
+                    imageHeight: 60,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fab fa-google mr-2"></i> Usar mi cuenta de Google',
+                    cancelButtonText: 'Luego',
+                    confirmButtonColor: '#00A859',
+                    cancelButtonColor: '#f3f4f6',
+                    customClass: {
+                        confirmButton: 'text-white font-bold rounded-2xl px-6 py-3',
+                        cancelButton: 'text-gray-400 font-bold rounded-2xl px-6 py-3'
+                    },
+                    buttonsStyling: true,
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{{ route('auth.google') }}";
+                    }
+                });
+            };
         });
 
         // Add slow bounce to utility
@@ -1975,23 +2052,23 @@
             });
         }
 
-        let deferredPrompt;
-        const installModal = document.getElementById('install-pwa-modal');
-        const installNowBtn = document.getElementById('btn-pwa-install-now');
-        const closeModalBtn = document.getElementById('btn-pwa-close-modal');
-        const androidView = document.getElementById('android-install-view');
-        const iosView = document.getElementById('ios-install-view');
+        var deferredPrompt;
+        var installModal = document.getElementById('install-pwa-modal');
+        var installNowBtn = document.getElementById('btn-pwa-install-now');
+        var closeModalBtn = document.getElementById('btn-pwa-close-modal');
+        var androidView = document.getElementById('android-install-view');
+        var iosView = document.getElementById('ios-install-view');
 
         // Detectar si ya está instalada
-        const isAppInstalled = () => {
+        var isAppInstalled = function() {
             return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         }
 
-        const isIOS = () => {
+        var isIOS = function() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         };
 
-        const showInstallModal = () => {
+        var showInstallModal = function() {
             if (isAppInstalled()) return;
             if (sessionStorage.getItem('pwa-modal-dismissed')) return;
 
@@ -2008,7 +2085,7 @@
 
             installModal.classList.remove('hidden');
             installModal.classList.add('flex');
-            setTimeout(() => {
+            setTimeout(function() {
                 installModal.classList.remove('opacity-0');
                 if (installModal.querySelector('.transition-transform')) {
                     installModal.querySelector('.transition-transform').classList.remove('scale-95');
@@ -2017,17 +2094,17 @@
             }, 10);
         };
 
-        const hideInstallModal = () => {
+        var hideInstallModal = function() {
             installModal.classList.add('opacity-0');
             installModal.querySelector('.scale-100').classList.remove('scale-100');
             installModal.querySelector('.transition-transform').classList.add('scale-95');
-            setTimeout(() => {
+            setTimeout(function() {
                 installModal.classList.add('hidden');
                 installModal.classList.remove('flex');
             }, 300);
         };
 
-        window.initPWAFlow = () => {
+        window.initPWAFlow = function() {
             console.log('PWA: Iniciando flujo de invitación...');
             if (deferredPrompt) {
                 setTimeout(showInstallModal, 500);
@@ -2036,7 +2113,7 @@
             }
         };
 
-        window.addEventListener('beforeinstallprompt', (e) => {
+        window.addEventListener('beforeinstallprompt', function(e) {
             console.log('PWA: beforeinstallprompt fired');
             e.preventDefault();
             deferredPrompt = e;
@@ -2050,7 +2127,7 @@
             setTimeout(showInstallModal, 3000);
         }
 
-        installNowBtn.addEventListener('click', async () => {
+        installNowBtn.addEventListener('click', function() {
             if (!deferredPrompt) {
                 console.warn('PWA: No deferredPrompt available for native install.');
                 return;
@@ -2060,24 +2137,22 @@
             deferredPrompt.prompt();
 
             // Wait for the user to respond to the prompt
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`PWA: User response to install prompt: ${outcome}`);
-
-            if (outcome === 'accepted') {
-                hideInstallModal();
-            }
-
-            // Clear the deferredPrompt so it can only be used once
-            deferredPrompt = null;
+            deferredPrompt.userChoice.then(function(choiceResult) {
+                console.log('PWA: User response to install prompt: ' + choiceResult.outcome);
+                if (choiceResult.outcome === 'accepted') {
+                    hideInstallModal();
+                }
+                deferredPrompt = null;
+            });
         });
 
-        closeModalBtn.addEventListener('click', () => {
+        closeModalBtn.addEventListener('click', function() {
             console.log('PWA: User dismissed the install modal');
             sessionStorage.setItem('pwa-modal-dismissed', 'true');
             hideInstallModal();
         });
 
-        window.addEventListener('appinstalled', () => {
+        window.addEventListener('appinstalled', function() {
             hideInstallModal();
             deferredPrompt = null;
         });

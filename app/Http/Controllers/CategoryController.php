@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Http\Controllers\LibraryController;
 
 class CategoryController extends Controller
 {
@@ -15,7 +16,8 @@ class CategoryController extends Controller
 
     public function create()
     {
-        return view('admin.categories.create');
+        $icons = LibraryController::getIcons();
+        return view('admin.categories.create', compact('icons'));
     }
 
     public function store(Request $request)
@@ -25,7 +27,6 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
             'icon' => 'nullable|string',
             'color' => 'nullable|string',
-            'is_active' => 'nullable|boolean',
             'sort_order' => 'nullable|integer',
         ]);
 
@@ -37,7 +38,8 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        return view('admin.categories.edit', compact('category'));
+        $icons = LibraryController::getIcons();
+        return view('admin.categories.edit', compact('category', 'icons'));
     }
 
     public function update(Request $request, Category $category)
@@ -47,7 +49,6 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
             'icon' => 'nullable|string',
             'color' => 'nullable|string',
-            'is_active' => 'nullable|boolean',
             'sort_order' => 'nullable|integer',
         ]);
 

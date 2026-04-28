@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use App\Http\Controllers\LibraryController;
 
 class SuperAdminController extends Controller
 {
@@ -85,7 +86,8 @@ class SuperAdminController extends Controller
     public function moduleSettings()
     {
         $modules = Module::all();
-        return view('admin.superadmin.modules', compact('modules'));
+        $icons = LibraryController::getIcons();
+        return view('admin.superadmin.modules', compact('modules', 'icons'));
     }
 
     /**
