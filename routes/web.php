@@ -16,10 +16,16 @@ Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('
 Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
 // Rutas de Cliente (Login con Google)
-Route::group(['prefix' => 'mi-cuenta', 'middleware' => 'auth'], function() {
+Route::group(['prefix' => 'mi-cuenta', 'middleware' => 'customer.or.admin'], function() {
     Route::get('/', [CustomerController::class, 'dashboard'])->name('customer.dashboard');
     Route::get('/perfil', [CustomerController::class, 'profile'])->name('customer.profile');
     Route::get('/pagos', [CustomerController::class, 'payments'])->name('customer.payments');
+    Route::post('/logout', function() {
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        return redirect('/');
+    })->name('customer.logout');
 });
 
 Route::get('/', function () {
@@ -34,6 +40,11 @@ Route::get('/', function () {
     
     return view('welcome', compact('categories', 'branches'));
 });
+
+// Alias para el login por defecto de Laravel
+Route::get('/login', function () {
+    return redirect()->route('admin.login');
+})->name('login');
 
 Route::group(['prefix' => 'admin'], function () {
     Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');

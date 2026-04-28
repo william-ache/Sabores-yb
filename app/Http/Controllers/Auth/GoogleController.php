@@ -28,19 +28,19 @@ class GoogleController extends Controller
                 'name' => $googleUser->name,
                 'google_id' => $googleUser->id,
                 'google_token' => $googleUser->token,
+                'avatar' => $googleUser->avatar,
                 // El password es nullable gracias a la migración
             ]);
 
             Auth::login($user);
             
-            // Si el usuario es administrador, activamos la sesión de admin
+            // Si el usuario es administrador, activamos la sesión de admin pero lo dejamos en su perfil de cliente
             if ($user->role === 'admin') {
                 session(['admin_logged_in' => true]);
-                return redirect()->intended('/admin');
             }
 
-            // Si es un cliente normal, va a su panel de cuenta
-            return redirect()->route('customer.dashboard');
+            // Si es un cliente normal, va a su perfil
+            return redirect()->route('customer.profile');
 
         } catch (\Exception $e) {
             \Log::error('Error en login con Google: ' . $e->getMessage());

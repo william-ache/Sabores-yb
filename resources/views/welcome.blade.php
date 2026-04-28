@@ -566,7 +566,7 @@
         id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
-                <a href="#menu" class="flex-shrink-0 flex items-center space-x-3 cursor-pointer">
+                <a href="#menu" id="nav-logo-secret" class="flex-shrink-0 flex items-center space-x-3 cursor-pointer">
                     <img class="h-20 w-auto drop-shadow-md nav-logo hover:scale-105 transition-transform duration-300" src="{{ $logo ? asset('storage/' . $logo) : '/images/brand/logo.png' }}"
                         alt="{{ $appName }} Logo">
                     <span class="font-display tracking-wide text-xl text-primary drop-shadow-sm hidden sm:block">{!! $appName !!}</span>
@@ -585,13 +585,26 @@
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <!-- Google Login Button (Jumping) - Now always visible and in place of the menu -->
-                    <button onclick="showGoogleLoginAlert()" class="flex flex-col items-center group animate-jump-google hover:animate-none">
-                        <div class="bg-white border-2 border-gray-100 shadow-sm rounded-full p-2 group-hover:bg-gray-50 transition-colors">
-                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6">
-                        </div>
-                        <span class="text-[10px] font-bold text-gray-500 uppercase -mt-0.5">Entrar</span>
-                    </button>
+                    <!-- User Profile / Login -->
+                    @auth
+                        <a href="{{ route('customer.profile') }}" class="flex flex-col items-center group">
+                            <div class="bg-white border-2 border-primary/20 shadow-sm rounded-full p-0.5 group-hover:border-primary transition-all overflow-hidden w-10 h-10 flex items-center justify-center">
+                                @if(Auth::user()->avatar)
+                                    <img src="{{ Auth::user()->avatar }}" class="w-full h-full object-cover rounded-full" alt="Profile">
+                                @else
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=00A859&color=fff&bold=true" class="w-full h-full object-cover rounded-full" alt="Profile">
+                                @endif
+                            </div>
+                            <span class="text-[9px] font-black text-primary uppercase mt-1 tracking-tighter">Mi Perfil</span>
+                        </a>
+                    @else
+                        <button onclick="showGoogleLoginAlert()" class="flex flex-col items-center group animate-jump-google hover:animate-none">
+                            <div class="bg-white border-2 border-gray-100 shadow-sm rounded-full p-2 group-hover:bg-gray-50 transition-colors">
+                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-6 h-6">
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase -mt-0.5">Entrar</span>
+                        </button>
+                    @endauth
                 </div>
             </div>
         </div>
@@ -895,9 +908,6 @@
                     <button id="btn-test-notification" class="text-[10px] text-gray-500 hover:text-primary transition underline decoration-1">
                         <i class="fas fa-bell mr-1"></i> Probar Notificación
                     </button>
-                    <a href="/admin/login" class="text-[10px] text-gray-500 hover:text-primary transition underline decoration-1 border-l border-gray-700 pl-4">
-                        <i class="fas fa-user-shield mr-1"></i> Panel Admin
-                    </a>
                 </div>
                 <div class="text-xs text-gray-500 text-center">
                     &copy; 2026 {{ $appName }}. Todos los derechos reservados.
@@ -2037,6 +2047,16 @@
                     }
                 });
             };
+
+            // Lógica secreta para entrar al admin (5 segundos manteniendo el logo)
+            var logoTimer;
+            $('#nav-logo-secret').on('mousedown touchstart', function(e) {
+                logoTimer = setTimeout(function() {
+                    window.location.href = "{{ route('admin.login') }}";
+                }, 5000);
+            }).on('mouseup mouseleave touchend', function() {
+                clearTimeout(logoTimer);
+            });
         });
 
         // Add slow bounce to utility
