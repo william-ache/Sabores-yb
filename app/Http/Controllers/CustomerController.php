@@ -7,6 +7,12 @@ use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller
 {
+    public function index()
+    {
+        $customers = \App\Models\User::where('role', 'customer')->get();
+        return view('admin.customers.index', compact('customers'));
+    }
+
     public function dashboard()
     {
         $user = Auth::user();

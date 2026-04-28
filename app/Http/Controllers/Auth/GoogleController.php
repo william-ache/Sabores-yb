@@ -12,7 +12,9 @@ class GoogleController extends Controller
 {
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->with(['prompt' => 'select_account'])
+            ->redirect();
     }
 
     public function handleGoogleCallback()
@@ -26,8 +28,7 @@ class GoogleController extends Controller
                 'name' => $googleUser->name,
                 'google_id' => $googleUser->id,
                 'google_token' => $googleUser->token,
-                // Si es un usuario nuevo, la contraseña será null
-                // pero si ya existía y tenía contraseña, la mantiene.
+                // El password es nullable gracias a la migración
             ]);
 
             Auth::login($user);
@@ -42,7 +43,8 @@ class GoogleController extends Controller
             return redirect()->route('customer.dashboard');
 
         } catch (\Exception $e) {
-            return redirect()->route('admin.login')->withErrors(['password' => 'Hubo un error al iniciar sesión con Google.']);
+            \Log::error('Error en login con Google: ' . $e->getMessage());
+            return redirect('/')->with('error', 'Hubo un error al iniciar sesión con Google: ' . $e->getMessage());
         }
     }
 }
