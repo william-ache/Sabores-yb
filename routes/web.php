@@ -19,6 +19,10 @@ Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallba
 Route::group(['prefix' => 'mi-cuenta', 'middleware' => 'customer.or.admin'], function() {
     Route::get('/', [CustomerController::class, 'dashboard'])->name('customer.dashboard');
     Route::get('/perfil', [CustomerController::class, 'profile'])->name('customer.profile');
+    Route::post('/perfil', [CustomerController::class, 'updateProfile'])->name('customer.profile.update');
+    Route::post('/save-order', [CustomerController::class, 'storeOrder'])->name('customer.order.store');
+    Route::post('/update-order-payment', [CustomerController::class, 'updateOrderPayment'])->name('customer.order.update_payment');
+    Route::get('/ordenes', [CustomerController::class, 'orders'])->name('customer.orders');
     Route::get('/pagos', [CustomerController::class, 'payments'])->name('customer.payments');
     Route::post('/logout', function() {
         Auth::logout();

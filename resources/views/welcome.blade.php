@@ -47,6 +47,10 @@
     <style>
     .swal2-popup { border-radius: 2rem !important; font-family: 'Outfit', sans-serif !important; border: 4px solid #fefefe !important; }
     .swal2-title { font-family: 'Lilita One', cursive !important; color: #24140a !important; font-size: 1.8rem !important; }
+    #checkout-modal {
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+    }
     .swal2-confirm { background-color: {{ $primaryColor }} !important; border-radius: 1rem !important; font-weight: 800 !important; padding: 0.8rem 2rem !important; box-shadow: 0 10px 15px -3px rgba(0, 168, 89, 0.2) !important; }
     .swal2-cancel { border-radius: 1rem !important; font-weight: 600 !important; }
 </style>
@@ -373,9 +377,9 @@
     </button>
 
     <!-- Unified Checkout MODAL (Full Screen Flow) -->
-    <div id="checkout-modal" class="fixed inset-0 h-screen h-[100dvh] z-[100] bg-white hidden flex-col transition-all duration-500 overflow-hidden">
+    <div id="checkout-modal" class="fixed inset-0 z-[100] bg-white hidden overflow-y-auto scroll-smooth overscroll-contain">
         <!-- Header -->
-        <div class="px-4 py-4 sm:px-6 sm:py-6 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 relative">
+        <div class="sticky top-0 z-30 px-4 py-4 sm:px-6 sm:py-6 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 relative">
             <div class="absolute left-6 top-1/2 -translate-y-1/2">
                 <button id="btn-checkout-back" class="text-gray-400 hover:text-textMain transition flex items-center gap-2 p-2 -ml-2">
                     <i class="fas fa-arrow-left"></i>
@@ -391,7 +395,7 @@
         </div>
 
         <!-- Progress Stepper -->
-        <div class="px-4 py-3 sm:px-6 sm:py-4 bg-gray-50/50 border-b border-gray-100 flex justify-center items-center gap-6 sm:gap-10 shrink-0 overflow-x-auto scrollbar-hide">
+        <div class="sticky top-[73px] sm:top-[89px] z-20 px-4 py-3 sm:px-6 sm:py-4 bg-gray-50/90 backdrop-blur-md border-b border-gray-100 flex justify-center items-center gap-6 sm:gap-10 shrink-0 overflow-x-auto scrollbar-hide">
             <div class="flex flex-col items-center gap-2">
                 <div class="checkout-step-dot active w-3 h-3 rounded-full bg-primary ring-4 ring-primary/10 transition-all duration-300" data-step="1"></div>
                 <span class="text-[8px] font-black text-primary uppercase whitespace-nowrap">Tu Orden</span>
@@ -414,11 +418,11 @@
         </div>
 
         <!-- Screens Container -->
-        <div class="flex-grow overflow-y-auto p-4 sm:p-10 relative bg-white">
+        <div class="p-4 sm:p-10 pb-40 relative bg-white min-h-screen">
             <div class="max-w-xl mx-auto">
                 
                 <!-- STEP 1: Revise Items -->
-                <div id="checkout-step-1" class="checkout-screen flex flex-col h-full animate-in fade-in duration-300">
+                <div id="checkout-step-1" class="checkout-screen flex flex-col animate-in fade-in duration-300">
                     <div class="flex items-center justify-between mb-8">
                         <div>
                             <h4 class="text-xl font-display text-textMain tracking-tight">Tu Selección</h4>
@@ -489,7 +493,7 @@
                 </div>
 
                 <!-- STEP 3: Delivery Details (MAPA / PICKUP INFO) -->
-                <div id="checkout-step-3" class="checkout-screen hidden animate-in fade-in slide-in-from-right duration-500 pb-20">
+                <div id="checkout-step-3" class="checkout-screen hidden animate-in fade-in slide-in-from-right duration-500 pb-32">
                     <div id="view-delivery-input" class="space-y-4">
                         <div class="flex items-center justify-between mb-2">
                             <div>
@@ -500,23 +504,41 @@
                                 TARIFA: $0.43 / KM
                             </div>
                         </div>
+
+                        @auth
+                            @if(Auth::user()->addresses->count() > 0)
+                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4">
+                                <label class="text-[8px] text-gray-400 font-black uppercase tracking-widest block mb-2">Mis Direcciones Guardadas</label>
+                                <div class="flex flex-col gap-2">
+                                    @foreach(Auth::user()->addresses as $addr)
+                                    <button type="button" 
+                                            onclick="selectSavedAddress({{ $addr->latitude }}, {{ $addr->longitude }}, '{{ addslashes($addr->address) }}')"
+                                            class="saved-addr-btn text-left p-3 rounded-xl border border-gray-200 bg-white hover:border-primary transition-all flex items-center gap-3 group">
+                                        <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                                            <i class="fas fa-home text-xs"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-black text-textMain uppercase tracking-tight">{{ $addr->label }}</p>
+                                            <p class="text-[9px] text-gray-400 font-medium truncate w-48 sm:w-64">{{ $addr->address }}</p>
+                                        </div>
+                                    </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+                        @endauth
  
                         <div class="text-center">
-                            <button id="btn-use-gps" type="button" class="group inline-flex items-center gap-3 bg-white border-2 border-primary/20 hover:border-primary px-5 py-3 rounded-[2rem] text-[11px] font-black uppercase tracking-widest text-primary shadow-xl shadow-primary/5 transition-all active:scale-95 mb-3">
-                                <div class="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                                    <i class="fas fa-location-arrow text-xs"></i>
-                                </div>
-                                <div class="text-left">
-                                    <div class="text-[7px] text-gray-400 font-bold leading-none mb-0.5">Detectar automáticamente</div>
-                                    <div class="leading-none tracking-tight">Mi Ubicación GPS</div>
-                                </div>
+                            <button id="btn-use-gps" type="button" class="group inline-flex items-center gap-4 bg-primary text-white px-8 py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 mb-4">
+                                <i class="fas fa-location-arrow text-lg animate-bounce-slow"></i>
+                                <span>Usar Mi Ubicación Actual</span>
                             </button>
                             <p class="text-[9px] text-gray-400 font-medium italic mb-4">
                                 <i class="fas fa-info-circle mr-1 text-primary/40"></i> Mueve el marcador naranja si es necesario
                             </p>
                         </div>
 
-                        <div id="delivery-map" class="w-full h-40 sm:h-64 bg-gray-100 rounded-[2rem] border-4 border-gray-50 shadow-inner z-0 overflow-hidden mb-4 relative">
+                        <div id="delivery-map" class="w-full h-48 sm:h-80 bg-gray-100 rounded-[2rem] border-4 border-gray-50 shadow-inner z-0 overflow-hidden mb-4 relative">
                         </div>
 
                         <div class="space-y-1 mb-4">
@@ -577,7 +599,7 @@
                 </div>
 
                 <!-- STEP 4: Checkout Summary -->
-                <div id="checkout-step-4" class="checkout-screen hidden animate-in fade-in duration-500 text-center space-y-10 pb-32">
+                <div id="checkout-step-4" class="checkout-screen hidden animate-in fade-in duration-500 text-center space-y-6 sm:space-y-10 pb-32">
                     <div class="space-y-3">
                         <h4 class="text-3xl font-display text-textMain tracking-tight">Resumen Final</h4>
                         <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">Todo listo para enviar</p>
@@ -927,8 +949,12 @@
                     </div>
                 </div>
 
+                <div class="max-w-md mx-auto mt-6">
+                    <input type="text" id="payment-reference" placeholder="Referencia del Pago (Opcional)" class="w-full bg-white border-2 border-gray-100 rounded-2xl py-4 px-6 text-sm font-bold text-center focus:border-green-500 outline-none transition-all shadow-inner mb-4">
+                </div>
+
                 <button id="btn-completar-pedido"
-                    class="w-full bg-green-500 text-white font-bold py-4 rounded-full hover:bg-green-600 transition shadow-lg shadow-green-500/30 text-lg flex items-center justify-center mt-6 group">
+                    class="w-full bg-green-500 text-white font-bold py-4 rounded-full hover:bg-green-600 transition shadow-lg shadow-green-500/30 text-lg flex items-center justify-center group">
                     <i class="fab fa-whatsapp text-2xl mr-2 group-hover:scale-110 transition-transform"></i> Reportar
                     Pago en WhatsApp
                 </button>
@@ -1344,6 +1370,24 @@
                         if (typeof window.initPWAFlow === 'function') window.initPWAFlow();
                     }, 2000);
                 }
+                
+                window.selectSavedAddress = function(lat, lng, address) {
+                    if (!lat || !lng) return;
+                    
+                    if (deliveryMap) {
+                        deliveryMap.setView([lat, lng], 16);
+                        if (deliveryMarker) {
+                            deliveryMarker.setLatLng([lat, lng]);
+                        }
+                        updateDeliveryCost(lat, lng);
+                    }
+                    $('#delivery-address-manual').val(address);
+                    
+                    // Visual feedback
+                    $('.saved-addr-btn').removeClass('border-primary bg-primary/5').addClass('border-gray-200 bg-white');
+                    event.currentTarget.classList.remove('border-gray-200', 'bg-white');
+                    event.currentTarget.classList.add('border-primary', 'bg-primary/5');
+                };
             });
  
             checkBranchSelection();
@@ -1352,7 +1396,7 @@
                 if (deliveryMap) return;
                 // Maracay center
                 deliveryMap = L.map('delivery-map', { attributionControl: false }).setView([STORE_LAT, STORE_LNG], 13);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(deliveryMap);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(deliveryMap);
 
                 // Icono tienda
                 var currentLogo = SELECTED_BRANCH && SELECTED_BRANCH.logo ? SELECTED_BRANCH.logo : GLOBAL_CONFIG.logo;
@@ -1719,6 +1763,9 @@
                         }
                     });
 
+                    // Reset Scroll
+                    $('#checkout-modal').scrollTop(0);
+
                     // Show and fade in new screen
                     var nextScreen = $('#checkout-step-' + step);
                     nextScreen.removeClass('hidden').hide().fadeIn(300);
@@ -1761,6 +1808,7 @@
                 }
 
                 currentCheckoutStep = 1;
+                $('body').addClass('overflow-hidden');
                 $('.checkout-screen').addClass('hidden');
                 $('#checkout-step-1').removeClass('hidden');
                 
@@ -1775,6 +1823,7 @@
             }
 
             function closeCheckout() {
+                $('body').removeClass('overflow-hidden');
                 checkoutModal.fadeOut(300, function() {
                     $(this).addClass('hidden');
                 });
@@ -1933,14 +1982,27 @@
             });
 
             $('#clear-cart-btn').click(function () {
-                playDeleteSound();
-                cart = [];
-                updateCartUI();
+                Swal.fire({
+                    title: '¿Vaciar carrito?',
+                    text: "Se eliminarán todos los productos seleccionados.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, vaciar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    confirmButtonColor: '{{ $primaryColor }}'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        playDeleteSound();
+                        cart = [];
+                        updateCartUI();
+                    }
+                });
             });
 
             $('#btn-confirm-whatsapp').click(function () {
-                // Close the full checkout modal
-                closeCheckout();
+                var $btn = $(this);
+                $btn.prop('disabled', true).addClass('opacity-70').html('<i class="fas fa-spinner fa-spin text-2xl mr-2"></i> Generando Orden...');
 
                 // Generar Mensaje de Orden directo (Estandar UTF-8 para WhatsApp)
                 var branchName = SELECTED_BRANCH ? SELECTED_BRANCH.name : "{{ $appName }}";
@@ -1959,11 +2021,13 @@
 
                 orderMsg += "---------------------------------------\n";
                 var totalPriceUSD = 0;
+                var subtotalUSD = 0;
                 cart.forEach(function (item) {
                     var bsRowTotal = (item.price * item.qty * bcvRate).toFixed(2);
                     orderMsg += "▸ " + item.qty + "x " + item.name + "\n      💵 Bs. " + bsRowTotal + "  |  $" + (item.price * item.qty).toFixed(2) + "\n";
-                    totalPriceUSD += (item.price * item.qty);
+                    subtotalUSD += (item.price * item.qty);
                 });
+                totalPriceUSD = subtotalUSD;
 
                 if (orderConfig.type === 'delivery') {
                     var costBs = (orderConfig.deliveryCost * bcvRate).toFixed(2);
@@ -1978,52 +2042,85 @@
                 orderMsg += "📊 _Tasa BCV del día: Bs. " + bcvRate.toFixed(2) + "_\n\n";
                 orderMsg += "✅ Envíame la disponibilidad para poder realizar el pago. ¡Quedo atento(a)!";
 
-                var waNumber = SELECTED_BRANCH ? SELECTED_BRANCH.whatsapp : "{{ $whatsappNumber }}";
-                waNumber = waNumber.replace(/\+/g, '').trim(); 
-                var waLink = "https://wa.me/" + waNumber + "?text=" + encodeURIComponent(orderMsg);
+                // AJAX para guardar la orden en la BD
+                $.ajax({
+                    url: "{{ route('customer.order.store') }}",
+                    method: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        items: cart,
+                        total: bsTotalOrder,
+                        subtotal: (subtotalUSD * bcvRate).toFixed(2),
+                        type: orderConfig.type === 'delivery' ? 'Delivery' : 'PickUp',
+                        delivery_address: orderConfig.type === 'delivery' ? $('#delivery-address-manual').val() : ('Retiro en: ' + branchName),
+                        delivery_cost: (orderConfig.deliveryCost * bcvRate).toFixed(2),
+                        payment_method: 'Pago Móvil (Pendiente)',
+                        branch_id: SELECTED_BRANCH ? SELECTED_BRANCH.id : null
+                    },
+                    success: function(res) {
+                        if (res.success) {
+                            window.CURRENT_ORDER_ID = res.order_id;
+                            console.log("Orden guardada con ID:", res.order_id);
+                        }
+                    },
+                    error: function(err) {
+                        console.error("Error guardando orden:", err);
+                    },
+                    complete: function() {
+                        // Revertir botón y continuar flujo
+                        $btn.prop('disabled', false).removeClass('opacity-70').html('<i class="fab fa-whatsapp text-3xl mr-2"></i> <span class="text-xl uppercase tracking-widest">Enviar por WhatsApp</span>');
+                        
+                        // Close the full checkout modal
+                        closeCheckout();
 
-                // Store formatted data for copy button
-                var copyText = 'Pago Móvil {{ $appName }}\nBanco: Venezuela (0102)\nTel: 04161071344\nCI: V-12993940\nMonto: Bs. ' + bsTotalOrder;
-                $('#btn-copy-data').attr('data-copy', copyText);
-                $('#btn-copy-monto').attr('data-copy', bsTotalOrder);
+                        var waNumber = SELECTED_BRANCH ? SELECTED_BRANCH.whatsapp : "{{ $whatsappNumber }}";
+                        waNumber = waNumber.replace(/\+/g, '').trim(); 
+                        var waLink = "https://wa.me/" + waNumber + "?text=" + encodeURIComponent(orderMsg);
 
-                // Copiar los datos del pago móvil directamente al portapapeles del cliente
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(copyText).catch(function (err) { });
-                }
+                        // Store formatted data for copy button
+                        var copyText = 'Pago Móvil {{ $appName }}\nBanco: Venezuela (0102)\nTel: 04161071344\nCI: V-12993940\nMonto: Bs. ' + bsTotalOrder;
+                        $('#btn-copy-data').attr('data-copy', copyText);
+                        $('#btn-copy-monto').attr('data-copy', bsTotalOrder);
 
-                // Abrir en WhatsApp
-                window.open(waLink, '_blank');
+                        // Copiar los datos del pago móvil directamente al portapapeles del cliente
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(copyText).catch(function (err) { });
+                        }
 
-                // Inject values into Payment Section
-                $('#pago-total-bs').text('Bs. ' + bsTotalOrder);
+                        // Abrir en WhatsApp
+                        window.open(waLink, '_blank');
 
-                // Mostrar pagos
-                $('#pagos').removeClass('hidden');
+                        // Inject values into Payment Section
+                        $('#pago-total-bs').text('Bs. ' + bsTotalOrder);
 
-                // Scroll a pagos
-                $('html, body').animate({
-                    scrollTop: $("#pagos").offset().top - 80
-                }, 800, 'swing');
+                        // Mostrar pagos
+                        $('#pagos').removeClass('hidden');
 
-                // Expiración de sesión y Cronómetro (20 minutos)
-                var timeLeft = 20 * 60; // 1200 seconds
-                $('#payment-timer').text("20:00");
+                        // Scroll a pagos
+                        $('html, body').animate({
+                            scrollTop: $("#pagos").offset().top - 80
+                        }, 800, 'swing');
 
-                if (window.paymentInterval) clearInterval(window.paymentInterval);
+                        // Expiración de sesión y Cronómetro (20 minutos)
+                        var timeLeft = 20 * 60; // 1200 seconds
+                        $('#payment-timer').text("20:00");
 
-                window.paymentInterval = setInterval(function () {
-                    timeLeft--;
-                    var m = Math.floor(timeLeft / 60);
-                    var s = timeLeft % 60;
-                    $('#payment-timer').text((m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+                        if (window.paymentInterval) clearInterval(window.paymentInterval);
 
-                    if (timeLeft <= 0) {
-                        clearInterval(window.paymentInterval);
-                        Swal.fire({ title: "{{ $appName }}", text: "⏱️ Tu sesión de pago ha expirado. La página se recargará por seguridad para evitar errores con los precios y montos a transferir.", icon: "info" });
-                        window.location.reload();
+                        window.paymentInterval = setInterval(function () {
+                            timeLeft--;
+                            var m = Math.floor(timeLeft / 60);
+                            var s = timeLeft % 60;
+                            $('#payment-timer').text((m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+
+                            if (timeLeft <= 0) {
+                                clearInterval(window.paymentInterval);
+                                Swal.fire({ title: "{{ $appName }}", text: "⏱️ Tu sesión de pago ha expirado. La página se recargará por seguridad para evitar errores con los precios y montos a transferir.", icon: "info" });
+                                window.location.reload();
+                            }
+                        }, 1000);
                     }
-                }, 1000);
+                });
             });
 
             // Logica para copiar datos de pago
@@ -2078,12 +2175,32 @@
             });
 
             $('#btn-completar-pedido').click(function () {
+                var ref = $('#payment-reference').val().trim();
                 var waNumber = SELECTED_BRANCH ? SELECTED_BRANCH.whatsapp : "{{ $whatsappNumber }}";
                 waNumber = waNumber.replace(/\+/g, '').trim();
                 var branchName = SELECTED_BRANCH ? SELECTED_BRANCH.name : "{{ $appName }}";
-                var compMsg = `¡Listo! Ya realicé el pago de mi pedido para la sede *${branchName}*. Te mando la imagen del comprobante por acá 📸.`;
+                var compMsg = `¡Listo! Ya realicé el pago de mi pedido para la sede *${branchName}*. ` + (ref ? `La referencia es: *${ref}*. ` : '') + `Te mando la imagen del comprobante por acá 📸.`;
                 var waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(compMsg)}`;
-                window.open(waLink, '_blank');
+
+                // Actualizar orden con referencia si existe CURRENT_ORDER_ID
+                if (window.CURRENT_ORDER_ID) {
+                    $.ajax({
+                        url: "{{ route('customer.order.update_payment') }}",
+                        method: "POST",
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            order_id: window.CURRENT_ORDER_ID,
+                            payment_reference: ref
+                        },
+                        complete: function() {
+                            window.open(waLink, '_blank');
+                            // Limpiar carrito y recargar o redirigir?
+                            // Por ahora solo abrimos WA
+                        }
+                    });
+                } else {
+                    window.open(waLink, '_blank');
+                }
             });
 
             // Smooth scrolling for anchor links
@@ -2171,7 +2288,7 @@
                 logoTimer = setTimeout(function() {
                     window.location.href = "{{ route('admin.login') }}";
                 }, 5000);
-            }).on('mouseup mouseleave touchend', function() {
+            }).on('mouseup mouseleave touchend touchcancel contextmenu', function() {
                 clearTimeout(logoTimer);
             });
         });

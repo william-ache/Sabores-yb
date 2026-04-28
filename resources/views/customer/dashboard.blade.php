@@ -1,4 +1,4 @@
-@extends('admin.layout')
+@extends('customer.layout')
 
 @section('content')
 <div class="max-w-4xl mx-auto">
@@ -14,22 +14,8 @@
     </div>
 
     <!-- Grid de Secciones -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        <!-- Historial de Órdenes -->
-        <a href="#" class="group bg-white rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 border border-gray-100 hover:border-primary/50 transition transform hover:-translate-y-1">
-            <div class="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-2xl mb-6 group-hover:bg-primary group-hover:text-white transition">
-                <i class="fas fa-history"></i>
-            </div>
-            <h3 class="text-xl font-display text-textMain mb-2">Mis Órdenes</h3>
-            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-loose">Mira lo que has pedido y repite tus favoritos.</p>
-            
-            <div class="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between">
-                <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Sin órdenes aún</span>
-                <i class="fas fa-arrow-right text-gray-200 group-hover:text-primary transition"></i>
-            </div>
-        </a>
-
         <!-- Mi Perfil -->
         <a href="{{ route('customer.profile') }}" class="group bg-white rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 border border-gray-100 hover:border-secondary/50 transition transform hover:-translate-y-1">
             <div class="h-16 w-16 bg-secondary/10 rounded-2xl flex items-center justify-center text-orange-600 text-2xl mb-6 group-hover:bg-secondary group-hover:text-white transition">
@@ -44,17 +30,17 @@
             </div>
         </a>
 
-        <!-- Métodos de Pago -->
-        <a href="{{ route('customer.payments') }}" class="group bg-white rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 border border-gray-100 hover:border-accent/50 transition transform hover:-translate-y-1">
-            <div class="h-16 w-16 bg-accent/10 rounded-2xl flex items-center justify-center text-accent text-2xl mb-6 group-hover:bg-accent group-hover:text-white transition">
-                <i class="fas fa-credit-card"></i>
+        <!-- Historial de Órdenes -->
+        <a href="{{ route('customer.orders') }}" class="group bg-white rounded-[2rem] p-8 shadow-xl shadow-gray-200/40 border border-gray-100 hover:border-primary/50 transition transform hover:-translate-y-1">
+            <div class="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-2xl mb-6 group-hover:bg-primary group-hover:text-white transition">
+                <i class="fas fa-history"></i>
             </div>
-            <h3 class="text-xl font-display text-textMain mb-2">Pagos</h3>
-            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-loose">Configura tus métodos de pago para pedir más rápido.</p>
+            <h3 class="text-xl font-display text-textMain mb-2">Mis Órdenes</h3>
+            <p class="text-xs text-gray-400 font-bold uppercase tracking-widest leading-loose">Mira lo que has pedido y repite tus favoritos.</p>
             
             <div class="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between">
-                <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Pago Móvil / Zelle</span>
-                <i class="fas fa-arrow-right text-gray-200 group-hover:text-accent transition"></i>
+                <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{{ $orders->count() ?? 0 }} Órdenes</span>
+                <i class="fas fa-arrow-right text-gray-200 group-hover:text-primary transition"></i>
             </div>
         </a>
 

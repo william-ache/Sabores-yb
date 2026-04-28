@@ -25,7 +25,17 @@ class User extends Authenticatable
         'google_id',
         'google_token',
         'role',
+        'avatar',
+        'delivery_name',
+        'phone_1',
+        'phone_2',
+        'id_card',
     ];
+
+    public function addresses()
+    {
+        return $this->hasMany(UserAddress::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

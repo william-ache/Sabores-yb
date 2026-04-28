@@ -11,8 +11,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     @php
-        $primaryColor = \App\Models\Setting::get('primary_color', '#00A859');
+        $systemPrimary = \App\Models\Setting::get('primary_color', '#00A859');
         $secondaryColor = \App\Models\Setting::get('secondary_color', '#FFBF69');
         $favicon = \App\Models\Setting::get('favicon');
     @endphp
@@ -24,7 +32,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '{{ $primaryColor }}',
+                        primary: '{{ $systemPrimary }}',
                         secondary: '{{ $secondaryColor }}',
                         accent: '#E71D36',
                         dark: '#2EC4B6',
@@ -40,6 +48,33 @@
         }
     </script>
     <style>
+        /* Modern Slim Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: {{ $systemPrimary }};
+            border-radius: 20px;
+            border: 2px solid #f8fafc;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: {{ $systemPrimary }};
+            filter: brightness(0.9);
+        }
+
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: {{ $systemPrimary }} #f8fafc;
+        }
+
         body { font-family: 'Outfit', sans-serif; background-color: #FDFFFC; }
         .font-display { font-family: 'Lilita One', cursive; }
     </style>

@@ -16,6 +16,16 @@ class Order extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
     public function items()
     {
         return $this->hasMany(OrderItem::class);
