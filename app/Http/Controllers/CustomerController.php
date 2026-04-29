@@ -173,16 +173,22 @@ class CustomerController extends Controller
         }
 
         $validated = $request->validate([
-            'items' => 'required|array',
             'total' => 'required|numeric',
             'subtotal' => 'required|numeric',
+            'items' => 'required|array',
             'type' => 'required|string',
             'delivery_address' => 'nullable|string',
             'delivery_cost' => 'nullable|numeric',
             'payment_method' => 'nullable|string',
             'payment_reference' => 'nullable|string',
             'branch_id' => 'nullable|integer',
+            'receipt' => 'nullable|image|max:5120',
         ]);
+
+        $receiptPath = null;
+        if ($request->hasFile('receipt')) {
+            $receiptPath = $request->file('receipt')->store('receipts', 'public');
+        }
 
         $order = Order::create([
             'user_id' => $user->id,
@@ -193,8 +199,9 @@ class CustomerController extends Controller
             'type' => $validated['type'],
             'delivery_address' => $validated['delivery_address'],
             'delivery_cost' => $validated['delivery_cost'] ?? 0,
-            'payment_method' => $validated['payment_method'],
+            'payment_method' => $validated['payment_method'] ?? 'Pago Móvil',
             'payment_reference' => $validated['payment_reference'],
+            'payment_receipt' => $receiptPath,
             'branch_id' => $validated['branch_id'],
         ]);
 
@@ -208,7 +215,8 @@ class CustomerController extends Controller
 
         return response()->json([
             'success' => true,
-            'order_id' => $order->id
+            'order_id' => $order->id,
+            'receipt_url' => $receiptPath ? asset('storage/' . $receiptPath) : null
         ]);
     }
 

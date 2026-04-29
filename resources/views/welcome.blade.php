@@ -413,7 +413,12 @@
             <div class="w-8 sm:w-12 h-px bg-gray-200 -mt-5"></div>
             <div class="flex flex-col items-center gap-2">
                 <div class="checkout-step-dot w-3 h-3 rounded-full bg-gray-200 transition-all duration-300" data-step="4"></div>
-                <span class="text-[8px] font-black text-gray-400 uppercase whitespace-nowrap">Confirmar</span>
+                <span class="text-[8px] font-black text-gray-400 uppercase whitespace-nowrap">Resumen</span>
+            </div>
+            <div class="w-8 sm:w-12 h-px bg-gray-200 -mt-5"></div>
+            <div class="flex flex-col items-center gap-2">
+                <div class="checkout-step-dot w-3 h-3 rounded-full bg-gray-200 transition-all duration-300" data-step="5"></div>
+                <span class="text-[8px] font-black text-gray-400 uppercase whitespace-nowrap">Pago</span>
             </div>
         </div>
 
@@ -602,12 +607,12 @@
                 <div id="checkout-step-4" class="checkout-screen hidden animate-in fade-in duration-500 text-center space-y-6 sm:space-y-10 pb-32">
                     <div class="space-y-3">
                         <h4 class="text-3xl font-display text-textMain tracking-tight">Resumen Final</h4>
-                        <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">Todo listo para enviar</p>
+                        <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest">Revisa tu pedido antes de pagar</p>
                     </div>
 
                     <div class="bg-gray-50/50 rounded-[3rem] p-8 sm:p-10 space-y-6 text-left border border-gray-100 shadow-inner">
                         <!-- Items List -->
-                        <div id="summary-items" class="space-y-4 border-b border-gray-200 pb-6 mb-6">
+                        <div id="summary-items" class="space-y-2 border-b border-gray-200 pb-6 mb-6">
                             <!-- Items inyectados por JS -->
                         </div>
 
@@ -628,25 +633,128 @@
                         </div>
                     </div>
 
-                    <div class="bg-sky-50 p-6 rounded-[2.5rem] border border-sky-100 text-left flex gap-5">
-                        <div class="w-12 h-12 bg-sky-500 rounded-2xl flex items-center justify-center text-white text-xl shrink-0 shadow-lg shadow-sky-500/20">
-                            <i class="fas fa-paper-plane"></i>
+                    <button id="btn-go-to-payment" class="w-full bg-primary text-white font-black py-6 rounded-[2.5rem] shadow-2xl shadow-primary/40 flex items-center justify-center gap-4 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
+                        <span class="text-xl uppercase tracking-widest">Continuar al Pago</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <button class="btn-step-back w-full py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-textMain transition-all">
+                        <i class="fas fa-arrow-left mr-2"></i> Volver al paso anterior
+                    </button>
+                </div>
+
+                <!-- STEP 5: Payment -->
+                <div id="checkout-step-5" class="checkout-screen hidden animate-in fade-in duration-500 text-center space-y-6 pb-32">
+                    <div class="space-y-2">
+                        <h4 class="text-2xl font-display text-textMain tracking-tight">¡Casi listo! Realiza tu Pago</h4>
+                        <p class="text-[10px] text-gray-400 font-medium px-8 leading-relaxed">Por favor realiza el pago y repórtalo por WhatsApp para procesar tu orden.</p>
+                    </div>
+
+                    <!-- Timer Section -->
+                    <div class="bg-orange-50 border border-orange-100 rounded-[2rem] p-4 mx-auto max-w-[280px]">
+                        <p class="text-[9px] font-black text-orange-800 uppercase tracking-widest mb-1">
+                            <i class="fas fa-stopwatch mr-1"></i> Tienes 20 minutos para pagar
+                        </p>
+                        <div id="payment-timer" class="text-3xl font-display text-orange-600">20:00</div>
+                    </div>
+
+                    <div class="bg-red-50/30 rounded-[3rem] p-6 sm:p-8 space-y-6 text-left border border-red-100/50 shadow-sm relative overflow-hidden">
+                        <div class="absolute -top-10 -right-10 w-32 h-32 bg-red-100/20 rounded-full blur-2xl"></div>
+                        
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-red-600">
+                                    <i class="fas fa-mobile-alt text-xl"></i>
+                                </div>
+                                <h6 class="text-lg font-display text-red-900">Pago Móvil</h6>
+                            </div>
+                            <span class="text-[8px] font-black bg-red-100 text-red-700 px-2 py-1 rounded-lg uppercase tracking-widest">{{ \App\Models\Setting::get('bank_name', 'BANCAMIGA') }}</span>
                         </div>
-                        <div>
-                            <h5 class="text-[10px] font-black text-sky-800 uppercase tracking-tight">Instrucciones WhatsApp</h5>
-                            <p class="text-[11px] text-sky-700 leading-relaxed mt-1 font-medium italic">Al presionar el botón inferior se abrirá WhatsApp. Envía el mensaje generado para que podamos comenzar con tu pedido.</p>
+
+                        <div class="bg-white rounded-[2rem] p-5 space-y-4 border border-red-50 shadow-inner">
+                            <!-- Banco -->
+                            <div class="flex justify-between items-center group">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Banco</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-black text-red-900">{{ \App\Models\Setting::get('bank_name', 'BANCAMIGA') }}</span>
+                                    <button class="copy-btn p-1.5 text-gray-300 hover:text-primary transition-colors" data-copy="{{ \App\Models\Setting::get('bank_name', 'BANCAMIGA') }}">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Teléfono -->
+                            <div class="flex justify-between items-center group">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Teléfono</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-black text-red-900">{{ \App\Models\Setting::get('bank_phone', '0412-1234567') }}</span>
+                                    <button class="copy-btn p-1.5 text-gray-300 hover:text-primary transition-colors" data-copy="{{ \App\Models\Setting::get('bank_phone', '0412-1234567') }}">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Cédula -->
+                            <div class="flex justify-between items-center group">
+                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Cédula</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-black text-red-900">{{ \App\Models\Setting::get('bank_id', 'V-20.123.456') }}</span>
+                                    <button class="copy-btn p-1.5 text-gray-300 hover:text-primary transition-colors" data-copy="{{ \App\Models\Setting::get('bank_id', 'V-20.123.456') }}">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Monto -->
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-50">
+                                <span class="text-[10px] text-green-600 font-black uppercase tracking-tight">Monto Exacto</span>
+                                <div class="flex items-center gap-2">
+                                    <span id="payment-amount-bs-copy" class="text-lg font-display text-green-600">Bs. 0.00</span>
+                                    <button class="copy-btn p-1.5 text-gray-300 hover:text-primary transition-colors" id="btn-copy-amount">
+                                        <i class="far fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="btn-copy-all-payment" class="w-full bg-white border border-red-100 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-red-600 hover:bg-red-50 transition-colors shadow-sm flex items-center justify-center gap-2">
+                            <i class="far fa-copy"></i>
+                            Copiar datos del pago
+                        </button>
+                    </div>
+
+                    <div class="space-y-4 px-2">
+                        <div class="space-y-3 text-left">
+                            <label class="text-[9px] text-gray-400 font-black uppercase tracking-widest ml-4">Sube tu Comprobante</label>
+                            <div class="relative">
+                                <input type="file" id="payment-receipt" class="hidden" accept="image/*">
+                                <label for="payment-receipt" class="flex flex-col items-center justify-center w-full h-32 bg-white border-2 border-dashed border-gray-100 rounded-[2.5rem] cursor-pointer hover:border-primary/50 transition-all group overflow-hidden shadow-sm">
+                                    <div id="receipt-preview-container" class="absolute inset-0 hidden">
+                                        <img id="receipt-preview" class="w-full h-full object-cover opacity-20">
+                                    </div>
+                                    <div class="flex flex-col items-center justify-center relative z-10">
+                                        <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                            <i class="fas fa-cloud-upload-alt text-xl text-gray-300 group-hover:text-primary transition-colors"></i>
+                                        </div>
+                                        <p id="receipt-filename" class="text-[8px] text-gray-400 font-black uppercase tracking-widest">Seleccionar Imagen</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1 text-left">
+                            <label class="text-[9px] text-gray-400 font-black uppercase tracking-widest ml-4 text-left">Referencia (Opcional)</label>
+                            <input type="text" id="payment-reference" placeholder="Ej: 1234..." class="w-full bg-gray-50/50 border border-gray-100 rounded-[2rem] py-4 px-8 text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none transition shadow-sm">
                         </div>
                     </div>
 
                     <button id="btn-confirm-whatsapp" class="w-full bg-green-500 text-white font-black py-6 rounded-[2.5rem] shadow-2xl shadow-green-500/40 flex items-center justify-center gap-4 transition-all hover:scale-[1.02] active:scale-95 group relative overflow-hidden">
                         <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <i class="fab fa-whatsapp text-3xl transition-transform group-hover:scale-110 group-hover:rotate-6"></i>
-                        <span class="text-xl uppercase tracking-widest">Enviar por WhatsApp</span>
+                        <span class="text-xl uppercase tracking-widest">Notificar Pago</span>
                     </button>
-                    
-                    <button class="btn-step-back w-full py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-textMain transition-all">
-                        <i class="fas fa-arrow-left mr-2"></i> Volver al paso anterior
+
+                    <button class="btn-step-back w-full py-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-textMain transition-all">
+                        <i class="fas fa-arrow-left mr-2"></i> Volver al Resumen
                     </button>
+                </div>
 
                     <button id="btn-test-continue" class="text-[9px] text-gray-300 font-black uppercase tracking-widest hover:text-gray-500 transition mt-4">Omitir horario para pruebas</button>
                 </div>
@@ -762,16 +870,18 @@
                     <div class="flex flex-wrap items-start justify-center gap-x-6 gap-y-8 pb-4 px-2" id="categories-scroller">
                         <!-- Botón TODO -->
                         <button class="category-filter-btn flex flex-col items-center gap-2 group active" data-category="all">
-                            <div class="cat-icon-container w-14 h-14 rounded-2xl flex items-center justify-center border-2 shadow-lg shadow-transparent transition-all duration-300">
+                            <div class="cat-icon-container w-14 h-14 rounded-2xl flex items-center justify-center border-2 shadow-lg shadow-transparent transition-all duration-300 relative">
                                 <i class="fas fa-border-all text-xl"></i>
+                                <span class="category-count-badge absolute -top-1 -right-1 bg-primary text-white text-[8px] font-black px-1.5 py-0.5 rounded-lg border-2 border-white shadow-sm min-w-[20px] flex items-center justify-center transition-all">0</span>
                             </div>
                             <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 transition-all text-center">Todo</span>
                         </button>
 
                         @foreach($categories as $category)
                         <button class="category-filter-btn flex flex-col items-center gap-2 group" data-category="cat-{{ $category->id }}" style="--cat-color: {{ $category->color }}">
-                            <div class="cat-icon-container w-14 h-14 rounded-2xl flex items-center justify-center border-2 shadow-lg shadow-transparent transition-all duration-300 active:scale-95">
+                            <div class="cat-icon-container w-14 h-14 rounded-2xl flex items-center justify-center border-2 shadow-lg shadow-transparent transition-all duration-300 active:scale-95 relative">
                                 <i class="{{ $category->icon ?: 'fas fa-utensils' }} text-xl transition-transform group-hover:rotate-12"></i>
+                                <span class="category-count-badge absolute -top-1 -right-1 bg-primary text-white text-[8px] font-black px-1.5 py-0.5 rounded-lg border-2 border-white shadow-sm min-w-[20px] flex items-center justify-center transition-all" style="background-color: {{ $category->color }}">0</span>
                             </div>
                             <span class="text-[9px] font-black uppercase tracking-widest text-gray-400 transition-all text-center">{{ $category->name }}</span>
                         </button>
@@ -816,7 +926,12 @@
                                     <input type="number" id="qty-prod-{{ $product->id }}" class="w-10 text-center bg-white border-x border-gray-200 font-bold text-base px-0 py-1.5 focus:ring-0 outline-none" value="1" min="1" readonly>
                                     <button class="qty-btn plus flex-1 py-1.5 text-base font-bold hover:bg-white transition-colors text-primary counter-btn" data-target="qty-prod-{{ $product->id }}">+</button>
                                 </div>
-                                <button class="add-to-cart-btn w-1/2 bg-primary text-white font-bold py-2 text-xs sm:text-sm rounded-full hover:bg-green-600 transition shadow-md flex items-center justify-center text-center leading-[1.1]" data-qty="qty-prod-{{ $product->id }}" data-name="{{ $product->title }}" data-price="{{ $product->price }}">Añadir</button>
+                                <button class="add-to-cart-btn w-1/2 bg-primary text-white font-bold py-2 text-xs sm:text-sm rounded-full hover:bg-green-600 transition shadow-md flex items-center justify-center text-center leading-[1.1]" 
+                                        data-id="{{ $product->id }}"
+                                        data-qty="qty-prod-{{ $product->id }}" 
+                                        data-name="{{ $product->title }}" 
+                                        data-price="{{ $product->price }}"
+                                        data-image="{{ $product->image_path ? asset('storage/' . $product->image_path) : '/images/brand/logo.png' }}">Añadir</button>
                             </div>
                         </div>
                     </div>
@@ -1134,14 +1249,37 @@
             var SELECTED_BRANCH = JSON.parse(localStorage.getItem('selected_branch')) || null;
 
             // Global Brand Config for Fallback
-            var GLOBAL_CONFIG = {
+            const GLOBAL_CONFIG = {
                 appName: "{{ $appName }}",
-                address: "{{ $address }}",
+                logo: "{{ \App\Models\Setting::get('logo') }}",
+                isLoggedIn: {{ Auth::check() ? 'true' : 'false' }},
                 mapsLink: "{{ $mapsLink }}",
-                logo: "{{ $logo }}",
                 lat: 10.2586, 
                 lng: -67.5856
             };
+
+            const ALL_PRODUCTS = @json($categories->pluck('products')->flatten());
+
+            function rehydrateCart() {
+                var localCart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
+                var updatedCart = [];
+                
+                localCart.forEach(function(item) {
+                    var latestProduct = ALL_PRODUCTS.find(p => p.id == item.id);
+                    if (latestProduct && latestProduct.is_active) {
+                        updatedCart.push({
+                            id: latestProduct.id,
+                            name: latestProduct.title,
+                            price: parseFloat(latestProduct.price),
+                            qty: item.qty,
+                            image: latestProduct.image_path ? '/storage/' + latestProduct.image_path : '/images/brand/logo.png'
+                        });
+                    }
+                });
+                
+                cart = updatedCart;
+                saveCart();
+            }
 
             var STORE_LAT = SELECTED_BRANCH ? parseFloat(SELECTED_BRANCH.lat) : GLOBAL_CONFIG.lat;
             var STORE_LNG = SELECTED_BRANCH ? parseFloat(SELECTED_BRANCH.lng) : GLOBAL_CONFIG.lng;
@@ -1365,6 +1503,9 @@
  
             // Si la sede ya está seleccionada de antes, iniciamos PWA tras un pequeño delay
             $(document).ready(function() {
+                rehydrateCart();
+                updateCartUI();
+                
                 if (localStorage.getItem('selected_branch')) {
                     setTimeout(() => {
                         if (typeof window.initPWAFlow === 'function') window.initPWAFlow();
@@ -1567,48 +1708,70 @@
                 var query = productSearch.val().trim().toLowerCase();
                 var activeCategory = $('.category-filter-btn.active').data('category') || 'all';
 
+                var totalVisible = 0;
+                var categoryCounts = {};
+
                 categorySections.each(function() {
                     var section = $(this);
                     var sectionId = section.attr('id');
-                    
-                    // Primero ocultamos si la categoría no coincide con la seleccionada
-                    if (activeCategory !== 'all' && activeCategory !== sectionId) {
-                        section.addClass('hidden');
-                        return;
-                    }
-
-                    // Verificamos si es una sección con productos o de "Próximamente"
                     var foodCards = section.find('.food-card');
-                    var hasProducts = foodCards.length > 0;
+                    var visibleInCategory = 0;
 
-                    if (hasProducts) {
-                        // Filtramos los productos por búsqueda
-                        var hasVisibleProductsInSection = false;
-                        foodCards.each(function() {
-                            var card = $(this);
-                            var title = card.data('title') || "";
-                            var matchesQuery = query === "" || title.includes(query);
+                    foodCards.each(function() {
+                        var card = $(this);
+                        var title = card.data('title') || "";
+                        var matchesQuery = query === "" || title.includes(query);
 
-                            if (matchesQuery) {
-                                card.removeClass('hidden').addClass('reveal active');
-                                hasVisibleProductsInSection = true;
-                            } else {
-                                card.addClass('hidden');
-                            }
-                        });
+                        if (matchesQuery) {
+                            card.removeClass('hidden').addClass('reveal active');
+                            visibleInCategory++;
+                            totalVisible++;
+                        } else {
+                            card.addClass('hidden');
+                        }
+                    });
 
-                        // Mostramos la sección si hay productos que coincidan
-                        if (hasVisibleProductsInSection) {
+                    categoryCounts[sectionId] = visibleInCategory;
+
+                    // Visibility logic for section
+                    if (visibleInCategory > 0) {
+                        if (activeCategory === 'all' || activeCategory === sectionId) {
                             section.removeClass('hidden');
                         } else {
                             section.addClass('hidden');
                         }
                     } else {
-                        // Es una sección de "Próximamente": Solo se muestra si NO hay búsqueda activa
-                        if (query === "") {
-                            section.removeClass('hidden');
+                        // Section has no matches, but check if it's "Coming Soon" (has no food-cards)
+                        if (foodCards.length === 0 && query === "") {
+                            if (activeCategory === 'all' || activeCategory === sectionId) {
+                                section.removeClass('hidden');
+                            } else {
+                                section.addClass('hidden');
+                            }
                         } else {
                             section.addClass('hidden');
+                        }
+                    }
+                });
+
+                // Update Category Buttons and Badges
+                categoryBtns.each(function() {
+                    var btn = $(this);
+                    var catId = btn.data('category');
+                    var badge = btn.find('.category-count-badge');
+                    
+                    if (catId === 'all') {
+                        badge.text(totalVisible);
+                        // The 'All' button is always visible
+                        btn.removeClass('hidden');
+                    } else {
+                        var count = categoryCounts[catId] || 0;
+                        badge.text(count);
+                        
+                        if (count > 0 || query === "") {
+                            btn.removeClass('hidden').addClass('flex');
+                        } else {
+                            btn.addClass('hidden').removeClass('flex');
                         }
                     }
                 });
@@ -1685,17 +1848,24 @@
             });
 
             // Visual Cart Logic & Functionality
-            var cart = [];
+            var cart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
+            
+            function saveCart() {
+                localStorage.setItem('shopping_cart', JSON.stringify(cart));
+            }
 
             $('.add-to-cart-btn').click(function () {
+                var id = $(this).data('id');
                 var qtyInputId = $(this).data('qty');
                 var qty = parseInt($('#' + qtyInputId).val());
                 var name = $(this).data('name');
                 var price = parseFloat($(this).data('price'));
 
+                var image = $(this).data('image');
+
                 var existingItem = null;
                 for (var i = 0; i < cart.length; i++) {
-                    if (cart[i].name === name) {
+                    if (cart[i].id === id) {
                         existingItem = cart[i];
                         break;
                     }
@@ -1704,16 +1874,24 @@
                 if (existingItem) {
                     existingItem.qty += qty;
                 } else {
-                    cart.push({ name: name, price: price, qty: qty });
+                    cart.push({ id: id, name: name, price: price, qty: qty, image: image });
                 }
 
+                var $btn = $(this);
                 playPopSound();
                 if (typeof confetti === 'function') {
+                    var rect = $btn[0].getBoundingClientRect();
                     confetti({
-                        particleCount: 100,
-                        spread: 70,
-                        origin: { y: 0.6 },
-                        colors: ['#00A859', '#FFBF69', '#E71D36']
+                        particleCount: 50,
+                        spread: 60,
+                        origin: { 
+                            x: (rect.left + rect.width / 2) / window.innerWidth,
+                            y: (rect.top + rect.height / 2) / window.innerHeight
+                        },
+                        colors: ['#00A859', '#FFBF69', '#E71D36'],
+                        ticks: 200,
+                        gravity: 1.2,
+                        scalar: 0.8
                     });
                 }
 
@@ -1735,7 +1913,7 @@
             var stepDots = $('.checkout-step-dot');
 
             function goToCheckoutStep(step) {
-                if (step < 1 || step > 4) return;
+                if (step < 1 || step > 5) return;
                 
                 // Play subtle transition sound
                 playPopSound();
@@ -1783,6 +1961,30 @@
                         }
                     } else if (step === 4) {
                         renderOrderSummary();
+                    } else if (step === 5) {
+                        // Start/Reset Payment Timer (20 minutes)
+                        if (window.paymentInterval) clearInterval(window.paymentInterval);
+                        
+                        var timeLeft = 20 * 60; 
+                        $('#payment-timer').text("20:00");
+                        
+                        window.paymentInterval = setInterval(function () {
+                            timeLeft--;
+                            var m = Math.floor(timeLeft / 60);
+                            var s = timeLeft % 60;
+                            $('#payment-timer').text((m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
+
+                            if (timeLeft <= 0) {
+                                clearInterval(window.paymentInterval);
+                                Swal.fire({ 
+                                    title: "{{ $appName }}", 
+                                    text: "⏱️ Tu sesión de pago ha expirado por seguridad.", 
+                                    icon: "info" 
+                                }).then(function() {
+                                    window.location.reload();
+                                });
+                            }
+                        }, 1000);
                     }
                 });
             }
@@ -1831,6 +2033,7 @@
 
             // --- CART UI UPDATE ---
             function updateCartUI() {
+                saveCart();
                 var totalItems = 0;
                 var totalPrice = 0;
                 var html = '';
@@ -1850,21 +2053,25 @@
                         var bsTotal = (item.price * item.qty * bcvRate).toFixed(2);
                         
                         html += '<div class="cart-item-row group bg-gray-50/50 hover:bg-white border border-gray-100 p-4 rounded-3xl transition-all duration-300">' +
-                                '<div class="flex justify-between items-start gap-4">' +
-                                    '<div class="flex-grow">' +
-                                        '<h5 class="font-bold text-textMain text-sm mb-2">' + item.name + '</h5>' +
-                                        '<div class="flex items-center gap-3">' +
-                                            '<div class="flex items-center bg-white rounded-xl border border-gray-100 p-1 shadow-sm">' +
-                                                '<button class="w-8 h-8 rounded-lg hover:bg-red-50 text-red-500 transition cart-qty-minus" data-index="' + index + '">-</button>' +
-                                                '<span class="w-10 text-center font-black text-xs">' + item.qty + '</span>' +
-                                                '<button class="w-8 h-8 rounded-lg hover:bg-green-50 text-primary transition cart-qty-plus" data-index="' + index + '">+</button>' +
-                                            '</div>' +
-                                            '<span class="text-[10px] text-gray-400 font-bold">Bs. ' + bsPrice + ' c/u</span>' +
-                                        '</div>' +
+                                '<div class="flex gap-4">' +
+                                    '<div class="w-20 h-20 rounded-2xl overflow-hidden shrink-0 bg-white border border-gray-100 shadow-sm">' +
+                                        '<img src="' + item.image + '" class="w-full h-full object-cover" alt="' + item.name + '">' +
                                     '</div>' +
-                                    '<div class="text-right">' +
-                                        '<p class="font-display text-lg text-primary leading-none">Bs. ' + bsTotal + '</p>' +
-                                        '<button class="text-[9px] text-red-400 font-black uppercase tracking-widest mt-2 hover:text-red-600 delete-item transition" data-index="' + index + '">Eliminar</button>' +
+                                    '<div class="flex-grow flex flex-col justify-between">' +
+                                        '<div>' +
+                                            '<div class="flex justify-between items-start">' +
+                                                '<h5 class="font-bold text-textMain text-sm leading-tight">' + item.name + '</h5>' +
+                                                '<p class="font-display text-base text-primary leading-none ml-2">Bs. ' + bsTotal + '</p>' +
+                                            '</div>' +
+                                        '</div>' +
+                                        '<div class="flex items-center justify-between mt-2">' +
+                                            '<div class="flex items-center bg-white rounded-xl border border-gray-100 p-0.5 shadow-sm">' +
+                                                '<button class="w-7 h-7 rounded-lg hover:bg-red-50 text-red-500 transition cart-qty-minus flex items-center justify-center text-sm font-bold" data-index="' + index + '">-</button>' +
+                                                '<span class="w-8 text-center font-black text-xs">' + item.qty + '</span>' +
+                                                '<button class="w-7 h-7 rounded-lg hover:bg-green-50 text-primary transition cart-qty-plus flex items-center justify-center text-sm font-bold" data-index="' + index + '">+</button>' +
+                                            '</div>' +
+                                            '<button class="text-[9px] text-red-400 font-black uppercase tracking-widest hover:text-red-600 delete-item transition" data-index="' + index + '"><i class="fas fa-trash-alt mr-1"></i> Quitar</button>' +
+                                        '</div>' +
                                     '</div>' +
                                 '</div>' +
                             '</div>';
@@ -1896,9 +2103,17 @@
                 for (var i = 0; i < cart.length; i++) {
                     var item = cart[i];
                     var itemTotalBs = (item.price * item.qty * bcvRate).toFixed(2);
-                    itemsHtml += '<div class="flex justify-between items-center text-sm">' +
-                                    '<span class="text-gray-400 font-bold">' + item.qty + 'x <span class="text-textMain">' + item.name + '</span></span>' +
-                                    '<span class="font-black text-primary">Bs. ' + itemTotalBs + '</span>' +
+                    itemsHtml += '<div class="flex items-center gap-4 py-2 border-b border-gray-50 last:border-0">' +
+                                    '<div class="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-gray-100">' +
+                                        '<img src="' + item.image + '" class="w-full h-full object-cover">' +
+                                    '</div>' +
+                                    '<div class="flex-grow">' +
+                                        '<p class="text-sm font-bold text-textMain leading-tight">' + item.name + '</p>' +
+                                        '<p class="text-[10px] text-gray-400 font-bold">' + item.qty + ' unidades</p>' +
+                                    '</div>' +
+                                    '<div class="text-right">' +
+                                        '<p class="text-sm font-black text-primary">Bs. ' + itemTotalBs + '</p>' +
+                                    '</div>' +
                                  '</div>';
                 }
                 $('#summary-items').html(itemsHtml);
@@ -1912,8 +2127,13 @@
                     $('#summary-delivery-row').addClass('hidden');
                 }
 
-                $('#summary-total-bs').text('Bs. ' + (totalUSD * bcvRate).toFixed(2));
+                var totalBs = (totalUSD * bcvRate).toFixed(2);
+                $('#summary-total-bs').text('Bs. ' + totalBs);
                 $('#summary-total-usd').text('Ref: $' + totalUSD.toFixed(2));
+
+                // Sync with Payment Step
+                $('#payment-amount-bs-copy').text('Bs. ' + totalBs);
+                $('#btn-copy-amount').attr('data-copy', totalBs);
             }
 
             // EVENT BINDINGS
@@ -2000,178 +2220,186 @@
                 });
             });
 
+            $('#btn-go-to-payment').click(function () {
+                if (!GLOBAL_CONFIG.isLoggedIn) {
+                    Swal.fire({
+                        title: '¿Deseas iniciar sesión?',
+                        text: "Puedes continuar como invitado o iniciar sesión con Google para guardar esta orden en tu historial.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fab fa-google mr-2"></i> Iniciar con Google',
+                        cancelButtonText: 'Continuar como invitado',
+                        confirmButtonColor: '#4285F4',
+                        cancelButtonColor: '#94a3b8',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "{{ route('auth.google') }}";
+                        } else if (result.dismiss === Swal.DismissReason.cancel) {
+                            goToCheckoutStep(5);
+                        }
+                    });
+                    return;
+                }
+                goToCheckoutStep(5);
+            });
+
+            // Receipt Preview
+            $('#payment-receipt').change(function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#receipt-preview').attr('src', e.target.result);
+                        $('#receipt-preview-container').removeClass('hidden');
+                        $('#receipt-filename').text(file.name);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
             $('#btn-confirm-whatsapp').click(function () {
                 var $btn = $(this);
-                $btn.prop('disabled', true).addClass('opacity-70').html('<i class="fas fa-spinner fa-spin text-2xl mr-2"></i> Generando Orden...');
+                
+                // Prepare FormData for AJAX
+                var formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+                formData.append('total', cart.reduce(function(acc, item) { return acc + (item.price * item.qty); }, 0) + ((orderConfig.type === 'delivery') ? orderConfig.deliveryCost : 0));
+                formData.append('subtotal', cart.reduce(function(acc, item) { return acc + (item.price * item.qty); }, 0));
+                formData.append('type', orderConfig.type);
+                formData.append('delivery_address', orderConfig.clientAddress);
+                formData.append('delivery_cost', orderConfig.deliveryCost);
+                formData.append('payment_method', 'Pago Móvil');
+                formData.append('payment_reference', $('#payment-reference').val());
+                formData.append('branch_id', SELECTED_BRANCH ? SELECTED_BRANCH.id : '');
 
-                // Generar Mensaje de Orden directo (Estandar UTF-8 para WhatsApp)
-                var branchName = SELECTED_BRANCH ? SELECTED_BRANCH.name : "{{ $appName }}";
-                var orderMsg = "👋 ¡Hola, *" + branchName + "*!\n\n";
-                orderMsg += "📝 *¡NUEVO PEDIDO DESDE LA WEB!*:\n";
-
-                if (orderConfig.type === 'delivery') {
-                    orderMsg += "🚀 *TIPO DE ORDEN:* ENVÍO (DELIVERY)\n";
-                    orderMsg += "👤 *Cliente:* " + orderConfig.clientName + "\n";
-                    orderMsg += "📞 *Celular:* " + orderConfig.clientPhone + "\n";
-                    orderMsg += "📍 *Ubicación:* https://www.google.com/maps?q=" + orderConfig.lat + "," + orderConfig.lng + "\n";
-                    orderMsg += "🛵 *Distancia calculada:* " + orderConfig.distance.toFixed(1) + " km\n";
-                } else {
-                    orderMsg += "🏬 *TIPO DE ORDEN:* RETIRO EN LOCAL (PICKUP)\n";
-                }
-
-                orderMsg += "---------------------------------------\n";
-                var totalPriceUSD = 0;
-                var subtotalUSD = 0;
-                cart.forEach(function (item) {
-                    var bsRowTotal = (item.price * item.qty * bcvRate).toFixed(2);
-                    orderMsg += "▸ " + item.qty + "x " + item.name + "\n      💵 Bs. " + bsRowTotal + "  |  $" + (item.price * item.qty).toFixed(2) + "\n";
-                    subtotalUSD += (item.price * item.qty);
+                // Items
+                cart.forEach(function(item, index) {
+                    formData.append('items[' + index + '][id]', item.id);
+                    formData.append('items[' + index + '][quantity]', item.qty);
+                    formData.append('items[' + index + '][price]', item.price);
                 });
-                totalPriceUSD = subtotalUSD;
 
-                if (orderConfig.type === 'delivery') {
-                    var costBs = (orderConfig.deliveryCost * bcvRate).toFixed(2);
-                    totalPriceUSD += orderConfig.deliveryCost;
-                    orderMsg += "\n🛵 *Servicio Delivery:* Bs. " + costBs + " ($" + orderConfig.deliveryCost.toFixed(2) + ")\n";
+                // Receipt File
+                var receiptFile = $('#payment-receipt')[0].files[0];
+                if (receiptFile) {
+                    formData.append('receipt', receiptFile);
                 }
 
-                var bsTotalOrder = (totalPriceUSD * bcvRate).toFixed(2);
-                orderMsg += "---------------------------------------\n";
-                orderMsg += "💰 *TOTAL A PAGAR: Bs. " + bsTotalOrder + "*\n";
-                orderMsg += "💵 *(Ref: $" + totalPriceUSD.toFixed(2) + ")*\n";
-                orderMsg += "📊 _Tasa BCV del día: Bs. " + bcvRate.toFixed(2) + "_\n\n";
-                orderMsg += "✅ Envíame la disponibilidad para poder realizar el pago. ¡Quedo atento(a)!";
+                $btn.prop('disabled', true).addClass('opacity-70').html('<i class="fas fa-spinner fa-spin text-2xl mr-2"></i> Procesando...');
 
-                // AJAX para guardar la orden en la BD
                 $.ajax({
-                    url: "{{ route('customer.order.store') }}",
-                    method: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        items: cart,
-                        total: bsTotalOrder,
-                        subtotal: (subtotalUSD * bcvRate).toFixed(2),
-                        type: orderConfig.type === 'delivery' ? 'Delivery' : 'PickUp',
-                        delivery_address: orderConfig.type === 'delivery' ? $('#delivery-address-manual').val() : ('Retiro en: ' + branchName),
-                        delivery_cost: (orderConfig.deliveryCost * bcvRate).toFixed(2),
-                        payment_method: 'Pago Móvil (Pendiente)',
-                        branch_id: SELECTED_BRANCH ? SELECTED_BRANCH.id : null
-                    },
-                    success: function(res) {
-                        if (res.success) {
-                            window.CURRENT_ORDER_ID = res.order_id;
-                            console.log("Orden guardada con ID:", res.order_id);
-                        }
-                    },
-                    error: function(err) {
-                        console.error("Error guardando orden:", err);
-                    },
-                    complete: function() {
-                        // Revertir botón y continuar flujo
-                        $btn.prop('disabled', false).removeClass('opacity-70').html('<i class="fab fa-whatsapp text-3xl mr-2"></i> <span class="text-xl uppercase tracking-widest">Enviar por WhatsApp</span>');
-                        
-                        // Close the full checkout modal
-                        closeCheckout();
+                    url: '{{ route("customer.order.store") }}',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            // Generate WhatsApp Message
+                            var branchName = SELECTED_BRANCH ? SELECTED_BRANCH.name : "{{ $appName }}";
+                            var orderMsg = "👋 ¡Hola, *" + branchName + "*!\n\n";
+                            orderMsg += "📝 *¡NUEVO PEDIDO DESDE LA WEB!*:\n";
+                            orderMsg += "---------------------------------------\n";
 
-                        var waNumber = SELECTED_BRANCH ? SELECTED_BRANCH.whatsapp : "{{ $whatsappNumber }}";
-                        waNumber = waNumber.replace(/\+/g, '').trim(); 
-                        var waLink = "https://wa.me/" + waNumber + "?text=" + encodeURIComponent(orderMsg);
-
-                        // Store formatted data for copy button
-                        var copyText = 'Pago Móvil {{ $appName }}\nBanco: Venezuela (0102)\nTel: 04161071344\nCI: V-12993940\nMonto: Bs. ' + bsTotalOrder;
-                        $('#btn-copy-data').attr('data-copy', copyText);
-                        $('#btn-copy-monto').attr('data-copy', bsTotalOrder);
-
-                        // Copiar los datos del pago móvil directamente al portapapeles del cliente
-                        if (navigator.clipboard) {
-                            navigator.clipboard.writeText(copyText).catch(function (err) { });
-                        }
-
-                        // Abrir en WhatsApp
-                        window.open(waLink, '_blank');
-
-                        // Inject values into Payment Section
-                        $('#pago-total-bs').text('Bs. ' + bsTotalOrder);
-
-                        // Mostrar pagos
-                        $('#pagos').removeClass('hidden');
-
-                        // Scroll a pagos
-                        $('html, body').animate({
-                            scrollTop: $("#pagos").offset().top - 80
-                        }, 800, 'swing');
-
-                        // Expiración de sesión y Cronómetro (20 minutos)
-                        var timeLeft = 20 * 60; // 1200 seconds
-                        $('#payment-timer').text("20:00");
-
-                        if (window.paymentInterval) clearInterval(window.paymentInterval);
-
-                        window.paymentInterval = setInterval(function () {
-                            timeLeft--;
-                            var m = Math.floor(timeLeft / 60);
-                            var s = timeLeft % 60;
-                            $('#payment-timer').text((m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s);
-
-                            if (timeLeft <= 0) {
-                                clearInterval(window.paymentInterval);
-                                Swal.fire({ title: "{{ $appName }}", text: "⏱️ Tu sesión de pago ha expirado. La página se recargará por seguridad para evitar errores con los precios y montos a transferir.", icon: "info" });
-                                window.location.reload();
+                            if (orderConfig.type === 'delivery') {
+                                orderMsg += "🚀 *TIPO:* ENVÍO (DELIVERY)\n";
+                                orderMsg += "👤 *Cliente:* " + orderConfig.clientName + "\n";
+                                orderMsg += "📞 *Celular:* " + orderConfig.clientPhone + "\n";
+                                orderMsg += "📍 *Ubicación:* https://www.google.com/maps?q=" + orderConfig.lat + "," + orderConfig.lng + "\n";
+                            } else {
+                                orderMsg += "🏬 *TIPO:* RETIRO EN LOCAL (PICKUP)\n";
+                                orderMsg += "👤 *Cliente:* " + orderConfig.clientName + "\n";
+                                orderMsg += "📞 *Celular:* " + orderConfig.clientPhone + "\n";
                             }
-                        }, 1000);
+
+                            orderMsg += "---------------------------------------\n";
+                            cart.forEach(function (item) {
+                                var bsRowTotal = (item.price * item.qty * bcvRate).toFixed(2);
+                                orderMsg += "▸ " + item.qty + "x " + item.name + " (Bs. " + bsRowTotal + ")\n";
+                            });
+
+                            var totalUSD = cart.reduce(function(acc, item) { return acc + (item.price * item.qty); }, 0) + ((orderConfig.type === 'delivery') ? orderConfig.deliveryCost : 0);
+                            var totalBs = (totalUSD * bcvRate).toFixed(2);
+                            orderMsg += "---------------------------------------\n";
+                            orderMsg += "💰 *TOTAL A PAGAR:* Bs. " + totalBs + " ($" + totalUSD.toFixed(2) + ")\n";
+                            
+                            if ($('#payment-reference').val()) {
+                                orderMsg += "🔢 *Referencia:* " + $('#payment-reference').val() + "\n";
+                            }
+                            
+                            if (response.receipt_url) {
+                                orderMsg += "🖼️ *Comprobante:* " + response.receipt_url + "\n";
+                            }
+                            
+                            orderMsg += "\n_Pedido generado automáticamente desde la web_";
+
+                            var waUrl = "https://wa.me/{{ $whatsappNumber }}?text=" + encodeURIComponent(orderMsg);
+                            
+                            Swal.fire({
+                                title: '¡Pedido Registrado!',
+                                text: 'Tu pedido ha sido guardado. Ahora te redirigiremos a WhatsApp para notificar a la tienda.',
+                                icon: 'success',
+                                confirmButtonText: 'Ir a WhatsApp',
+                                confirmButtonColor: '#25D366'
+                            }).then(function() {
+                                window.open(waUrl, '_blank');
+                                location.reload();
+                            });
+                        }
+                    },
+                    error: function() {
+                        $btn.prop('disabled', false).removeClass('opacity-70').html('<i class="fab fa-whatsapp text-3xl mr-2"></i> Notificar Pago');
+                        Swal.fire('Error', 'No se pudo guardar la orden. Intenta de nuevo.', 'error');
                     }
                 });
             });
 
-            // Logica para copiar datos de pago
-            $('#btn-copy-data, #btn-copy-all-final').click(function () {
-                var textToCopy = $('#btn-copy-data').attr('data-copy');
-                var $btn = $(this);
-                var isFinal = $btn.attr('id') === 'btn-copy-all-final';
-
-                navigator.clipboard.writeText(textToCopy).then(function () {
-                    if (isFinal) {
-                        var originalHtml = $btn.html();
-                        $btn.html('<i class="fas fa-check text-green-500"></i> ¡Todo copiado!');
-                        $btn.addClass('bg-green-50 border-green-200');
-                        setTimeout(() => {
-                            $btn.html(originalHtml);
-                            $btn.removeClass('bg-green-50 border-green-200');
-                        }, 2500);
-                    } else {
-                        var $textSpan = $('#text-copy-data');
-                        var $icon = $btn.find('i');
-                        // Success visual feedback
-                        $btn.removeClass('bg-white text-red-600 hover:bg-red-600 hover:text-white border-red-200');
-                        $btn.addClass('bg-green-500 text-white border-green-500');
-                        $icon.removeClass('fa-copy').addClass('fa-check-circle');
-                        $textSpan.text('¡Datos copiados!');
-
-                        setTimeout(function () {
-                            // Revert visual change after 2.5s
-                            $btn.removeClass('bg-green-500 text-white border-green-500');
-                            $btn.addClass('bg-white text-red-600 hover:bg-red-600 hover:text-white border-red-200');
-                            $icon.removeClass('fa-check-circle').addClass('fa-copy');
-                            $textSpan.text('Copiar datos del pago');
-                        }, 2500);
-                    }
-                }).catch(function (err) {
-                    Swal.fire({ title: "Â¡Ups!", text: "No se pudo copiar el texto. IntÃ©ntalo manualmente.", icon: "error" });
-                });
-            });
-
-            // Logica para los botones pequeños individuales
-            $('.copy-btn-single').click(function () {
+            // Lógica para copiar datos de pago (Step 5)
+            $(document).on('click', '.copy-btn', function() {
                 var textToCopy = $(this).attr('data-copy');
                 var $icon = $(this).find('i');
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(textToCopy).then(function () {
-                        $icon.removeClass('far fa-copy').addClass('fas fa-check text-green-500 scale-125');
-                        setTimeout(function () {
-                            $icon.removeClass('fas fa-check text-green-500 scale-125').addClass('far fa-copy');
-                        }, 1300);
-                    }).catch(function (err) { });
-                }
+                var $btn = $(this);
+
+                if (!textToCopy) return;
+
+                navigator.clipboard.writeText(textToCopy).then(function() {
+                    $icon.removeClass('far fa-copy fa-copy').addClass('fas fa-check text-green-500 scale-110');
+                    $btn.addClass('bg-green-50 rounded-lg');
+                    
+                    setTimeout(function() {
+                        $icon.removeClass('fas fa-check text-green-500 scale-110').addClass('far fa-copy');
+                        $btn.removeClass('bg-green-50 rounded-lg');
+                    }, 2000);
+                });
+            });
+
+            $('#btn-copy-all-payment').click(function () {
+                var bank = "{{ \App\Models\Setting::get('bank_name', 'BANCAMIGA') }}";
+                var phone = "{{ \App\Models\Setting::get('bank_phone', '0412-1234567') }}";
+                var id = "{{ \App\Models\Setting::get('bank_id', 'V-20.123.456') }}";
+                var amount = $('#payment-amount-bs-copy').text();
+                
+                var textToCopy = "Pago Móvil {{ $appName }}\n" +
+                                 "Banco: " + bank + "\n" +
+                                 "Teléfono: " + phone + "\n" +
+                                 "Cédula: " + id + "\n" +
+                                 "Monto: " + amount;
+
+                var $btn = $(this);
+                var originalHtml = $btn.html();
+
+                navigator.clipboard.writeText(textToCopy).then(function () {
+                    $btn.html('<i class="fas fa-check text-green-500"></i> ¡Todo copiado!');
+                    $btn.addClass('bg-green-50 border-green-200');
+                    
+                    setTimeout(() => {
+                        $btn.html(originalHtml);
+                        $btn.removeClass('bg-green-50 border-green-200');
+                    }, 2500);
+                }).catch(function (err) {
+                    Swal.fire({ title: "¡Ups!", text: "No se pudo copiar el texto. Inténtalo manualmente.", icon: "error" });
+                });
             });
 
             $('#btn-completar-pedido').click(function () {
