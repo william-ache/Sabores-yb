@@ -18,12 +18,6 @@ class AdminAuthController extends Controller
         ]);
 
         $adminPassword = env('ADMIN_PASSWORD', 'admin123'); 
-        $superAdminPassword = env('SUPER_ADMIN_PASSWORD', 'SABORES2026');
-
-        if ($request->password === $superAdminPassword) {
-            $request->session()->put('super_admin_logged_in', true);
-            return redirect()->route('superadmin.index');
-        }
 
         if ($request->password === $adminPassword) {
             $request->session()->put('admin_logged_in', true);

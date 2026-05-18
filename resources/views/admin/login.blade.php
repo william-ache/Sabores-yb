@@ -17,8 +17,11 @@
                     <div class="relative">
                         <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
                         <input type="password" name="password" id="password" 
-                            class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 text-textMain font-bold focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" 
+                            class="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-12 text-textMain font-bold focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition" 
                             placeholder="••••••••" required autofocus>
+                        <button type="button" id="toggle-password" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition focus:outline-none">
+                            <i class="fas fa-eye" id="password-icon"></i>
+                        </button>
                     </div>
                 </div>
                 <button type="submit" class="w-full bg-primary hover:bg-green-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-lg">
@@ -34,4 +37,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('toggle-password').addEventListener('click', function () {
+        const passwordInput = document.getElementById('password');
+        const icon = document.getElementById('password-icon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+</script>
 @endsection

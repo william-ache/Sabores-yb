@@ -261,4 +261,15 @@ class CustomerController extends Controller
 
         return response()->json(['success' => false], 404);
     }
+
+    public function showPublicOrder(Order $order)
+    {
+        $order->load(['items.product', 'branch']);
+        $logo = Setting::get('logo');
+        $appName = Setting::get('app_name', 'Sabores Y&B');
+        $systemPrimary = Setting::get('primary_color', '#00A859');
+        $mapsLink = Setting::get('maps_link', 'https://maps.apple.com');
+
+        return view('order.public_show', compact('order', 'logo', 'appName', 'systemPrimary', 'mapsLink'));
+    }
 }

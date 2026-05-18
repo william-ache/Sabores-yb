@@ -149,10 +149,9 @@
                 </div>
                 <div class="flex items-center gap-4">
                     @if(session('admin_logged_in'))
-                        <a href="{{ route('customer.dashboard') }}" class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
-                            <i class="fas fa-user-circle"></i> Ver Mi Perfil
+                        <a href="/" target="_blank" class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                            <i class="fas fa-utensils"></i> Ver Menú
                         </a>
-
                         <form method="POST" action="{{ route('admin.logout') }}">
                             @csrf
                             <button type="submit" class="bg-accent/10 text-accent hover:bg-accent hover:text-white px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">

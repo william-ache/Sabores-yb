@@ -10,6 +10,7 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\InventoryController;
 use App\Models\Product;
 
 Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('auth.google');
@@ -45,6 +46,12 @@ Route::get('/', function () {
     return view('welcome', compact('categories', 'branches'));
 });
 
+Route::get('/pedido/ver/{order}', [CustomerController::class, 'showPublicOrder'])->name('order.public_show');
+
+Route::get('/politicas-de-uso', function () {
+    return view('policies');
+})->name('policies');
+
 // Alias para el login por defecto de Laravel
 Route::get('/login', function () {
     return redirect()->route('admin.login');
@@ -71,6 +78,7 @@ Route::group(['prefix' => 'admin'], function () {
         Route::resource('users', UserController::class);
         Route::resource('orders', OrderController::class);
         Route::resource('customers', \App\Http\Controllers\CustomerController::class);
+        Route::resource('inventories', InventoryController::class);
 
         // Módulos Dinámicos
         Route::get('modules/{moduleName}', [\App\Http\Controllers\DynamicModuleController::class, 'index'])->name('admin.modules.index');
@@ -82,34 +90,3 @@ Route::group(['prefix' => 'admin'], function () {
     });
 });
 
-Route::group(['prefix' => 'superadmin'], function () {
-    Route::get('login', [SuperAdminController::class, 'showLoginForm'])->name('superadmin.login');
-    Route::post('login', [SuperAdminController::class, 'login'])->name('superadmin.login.post');
-    
-    Route::group(['middleware' => 'superadmin.auth'], function () {
-        // Panel Maestro (Dashboard de Cards)
-        Route::get('/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.index');
-        
-        // Secciones Separadas
-        Route::get('/settings/brand', [SuperAdminController::class, 'brandSettings'])->name('superadmin.settings.brand');
-        Route::post('/settings/brand', [SuperAdminController::class, 'updateSettings'])->name('superadmin.settings.update');
-        
-        Route::get('/settings/modules', [SuperAdminController::class, 'moduleSettings'])->name('superadmin.settings.modules');
-        Route::post('/settings/modules/create', [SuperAdminController::class, 'createModule'])->name('superadmin.createModule');
-        
-        Route::post('/run-migrations', [SuperAdminController::class, 'runMigrations'])->name('superadmin.runMigrations');
-        Route::post('/run-seeders', [SuperAdminController::class, 'runSeeders'])->name('superadmin.runSeeders');
-        
-        // Sucursales
-        Route::resource('branches', BranchController::class)->names([
-            'index' => 'superadmin.branches.index',
-            'create' => 'superadmin.branches.create',
-            'store' => 'superadmin.branches.store',
-            'edit' => 'superadmin.branches.edit',
-            'update' => 'superadmin.branches.update',
-            'destroy' => 'superadmin.branches.destroy',
-        ]);
-
-        Route::post('/logout', [SuperAdminController::class, 'logout'])->name('superadmin.logout');
-    });
-});

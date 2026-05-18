@@ -73,7 +73,7 @@
                 <tr>
                     <td colspan="4" class="px-8 py-20 text-center">
                         <div class="flex flex-col items-center gap-4">
-                            <div class="text-gray-400 font-medium">Aún no hay administradores registrados (Usa SuperAdmin para forzar accesos).</div>
+                            <div class="text-gray-400 font-medium">Aún no hay administradores registrados.</div>
                         </div>
                     </td>
                 </tr>

@@ -15,6 +15,10 @@ class CustomerOrAdminAuth
             return $next($request);
         }
 
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['error' => 'No autenticado', 'redirect' => route('admin.login')], 401);
+        }
+
         return redirect()->route('admin.login');
     }
 }
